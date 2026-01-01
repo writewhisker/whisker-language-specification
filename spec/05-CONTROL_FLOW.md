@@ -743,6 +743,371 @@ Implementations MUST correctly handle:
 - All alternative types at boundary conditions
 - Short-circuit evaluation
 
+## 5.9 Gather Points
+
+### 5.9.1 Overview
+
+Gather points provide a way to reconverge flow after branching choices within a single passage. They reduce passage explosion by allowing multiple choice branches to continue to common content without requiring separate passages.
+
+**Syntax:**
+
+```whisker
+- Content after gather point
+```
+
+The gather marker (`-`) at the start of a line marks a gather point. All choices above the gather point reconverge at this line.
+
+### 5.9.2 Basic Usage
+
+```whisker
+:: Conversation
+"What do you think of the proposal?"
+
++ [Agree]
+  "I'm glad you see it my way," she says with a smile.
++ [Disagree]
+  "That's... disappointing," she says with a frown.
++ [Stay silent]
+  She waits expectantly, then sighs.
+
+- "Either way, we should discuss the details."
+
++ [Continue] -> Details
++ [Leave] -> Exit
+```
+
+**Behavior:**
+1. Player selects one of the three choices
+2. The corresponding response is displayed
+3. Flow continues to the gather point
+4. "Either way, we should discuss the details." is displayed
+5. New choices are presented
+
+### 5.9.3 Multiple Gather Points
+
+A passage can contain multiple gather points:
+
+```whisker
+:: Interview
+"First question: What's your greatest strength?"
+
++ [Leadership]
+  "Excellent quality for this role."
++ [Technical skills]
+  "We value expertise."
+
+- "Second question: Why do you want this job?"
+
++ [Growth opportunity]
+  "That's a mature perspective."
++ [Compensation]
+  She raises an eyebrow but nods.
+
+- "Thank you for your time."
+-> Exit
+```
+
+### 5.9.4 Nested Choices and Gathers
+
+Gather points work with nested choice structures:
+
+```whisker
+:: Negotiation
+"Let's discuss the price."
+
++ [Make an offer]
+  "I'll give you $50."
+
+  + + [Accept]
+    "Deal!" he says.
+  + + [Counter]
+    "How about $40?"
+
+  - - The merchant considers.
+
++ [Walk away]
+  "Wait, wait!" he calls after you.
+
+- The deal concludes one way or another.
+```
+
+**Nesting rules:**
+- Gather depth matches choice depth (same number of markers)
+- `- -` gathers nested choices (`+ +`)
+- Single `-` gathers top-level choices
+
+### 5.9.5 Gather Point Restrictions
+
+| Restriction | Description |
+|-------------|-------------|
+| Line start | Must appear at beginning of line (after optional indent) |
+| After choices | Must follow at least one choice |
+| Same passage | Cannot gather across passages |
+| Depth matching | Gather depth must match choice depth |
+
+**Invalid examples:**
+
+```whisker
+// INVALID: Gather without preceding choices
+:: Example
+Some text.
+- This is invalid.
+
+// INVALID: Mismatched depth
++ [Choice]
+  Content.
+- - Wrong depth (should be single -)
+```
+
+## 5.10 Tunnels
+
+### 5.10.1 Overview
+
+Tunnels enable reusable passages that return to the caller. They function like subroutines, allowing common content sequences to be defined once and called from multiple locations.
+
+**Tunnel call syntax:**
+```whisker
+-> PassageName ->
+```
+
+**Tunnel return syntax:**
+```whisker
+<-
+```
+
+### 5.10.2 Basic Usage
+
+```whisker
+:: Morning
+You wake up and stretch.
+-> BrushTeeth ->
+-> GetDressed ->
+Ready for the day!
++ [Go to work] -> Work
++ [Stay home] -> Home
+
+:: BrushTeeth
+You brush your teeth thoroughly.
+<-
+
+:: GetDressed
+You put on your favorite outfit.
+<-
+```
+
+**Execution flow:**
+1. "You wake up and stretch." displays
+2. Engine pushes return location to call stack
+3. BrushTeeth passage executes
+4. `<-` pops stack and returns to Morning
+5. GetDressed passage executes
+6. `<-` returns to Morning
+7. "Ready for the day!" displays
+8. Choices are presented
+
+### 5.10.3 Tunnels with Choices
+
+Tunnels can contain choices that don't exit the tunnel:
+
+```whisker
+:: Shop
+Welcome to the shop!
+-> BrowseItems ->
+Come back anytime!
+-> Exit
+
+:: BrowseItems
+"What interests you?"
++ [Weapons]
+  You examine the sword display.
++ [Armor]
+  The armor gleams invitingly.
++ [Potions]
+  Colorful bottles line the shelves.
+- "Let me know if you need help."
+<-
+```
+
+### 5.10.4 Nested Tunnels
+
+Tunnels can call other tunnels:
+
+```whisker
+:: MainQuest
+You embark on your journey.
+-> TravelSequence ->
+You arrive at your destination.
+
+:: TravelSequence
+-> PackSupplies ->
+-> MountHorse ->
+You ride through the countryside.
+<-
+
+:: PackSupplies
+You gather your supplies.
+<-
+
+:: MountHorse
+You mount your trusty steed.
+<-
+```
+
+**Call stack depth:**
+- Implementations MUST support at least 100 levels of nesting
+- Stack overflow SHOULD produce a clear error message
+
+### 5.10.5 Conditional Returns
+
+Tunnels can have multiple return points:
+
+```whisker
+:: GuardCheck
+The guard examines you.
+{ $hasPass }
+  "Everything seems in order."
+  <-
+{/}
+{ $bribeAmount >= 50 }
+  "Well, I suppose I can look the other way."
+  $gold -= $bribeAmount
+  <-
+{/}
+"You cannot pass!"
+-> Prison
+```
+
+**Note:** If a tunnel navigates to another passage without returning (`-> Prison` above), the call stack is NOT unwound. The tunnel becomes a normal navigation.
+
+### 5.10.6 Tunnel with Parameters
+
+While WLS doesn't have formal parameters, you can use temporary variables:
+
+```whisker
+:: Combat
+$_enemy = "Goblin"
+$_enemyHealth = 30
+-> BattleSequence ->
+"Victory! The $_enemy is defeated."
+
+:: BattleSequence
+"You face the $_enemy!"
+{ $_enemyHealth > 0 }
+  + [Attack]
+    $_enemyHealth -= 10
+    { $_enemyHealth > 0 }
+      "The $_enemy staggers but fights on."
+    {else}
+      "The $_enemy falls!"
+    {/}
+  + [Flee]
+    "You attempt to escape..."
+    <- // Return early
+{/}
+- <-
+```
+
+### 5.10.7 Error Conditions
+
+| Error Code | Name | Description |
+|------------|------|-------------|
+| WLS-FLW-009 | tunnel_target_not_found | Tunnel call to undefined passage |
+| WLS-FLW-010 | missing_tunnel_return | Tunnel passage has no `<-` |
+| WLS-FLW-011 | orphan_tunnel_return | `<-` outside of tunnel context |
+
+**Example errors:**
+
+```whisker
+// WLS-FLW-009: Tunnel target not found
+-> NonExistent ->
+
+// WLS-FLW-010: Missing tunnel return (warning)
+:: MyTunnel
+Some content but no <- to return.
+
+// WLS-FLW-011: Orphan tunnel return
+:: Start
+<-  // Error: not called as tunnel
+```
+
+### 5.10.8 Tunnel State and Save/Load
+
+When saving game state, implementations MUST preserve:
+
+| State | Description |
+|-------|-------------|
+| Call stack | Current tunnel call chain |
+| Return positions | Where to continue after `<-` |
+| Local variables | Temporary variables in scope |
+
+**Example state structure:**
+```json
+{
+  "tunnel_stack": [
+    { "passage": "Morning", "position": 3 },
+    { "passage": "TravelSequence", "position": 2 }
+  ]
+}
+```
+
+## 5.11 Advanced Flow Patterns
+
+### 5.11.1 Hub with Tunnels
+
+Combine tunnels with a hub passage for exploration:
+
+```whisker
+:: TownSquare
+You stand in the town square.
+
++ [Visit blacksmith] -> Blacksmith ->
++ [Visit tavern] -> Tavern ->
++ [Visit market] -> Market ->
++ [Leave town] -> Road
+
+// After returning from any tunnel, choices are available again
+```
+
+### 5.11.2 Gather with Conditional Branches
+
+```whisker
+:: Encounter
+A stranger approaches.
+
++ [Greet warmly]
+  $friendliness += 1
+  "Hello, friend!"
++ [Nod curtly]
+  "Hmph," the stranger mutters.
++ [Ignore]
+  $friendliness -= 1
+  They seem offended.
+
+- { $friendliness > 0 }
+  "Perhaps we could travel together?"
+  + [Accept] -> TravelTogether
+{else}
+  They pass by without another word.
+{/}
+-> Continue
+```
+
+## 5.12 Error Codes Summary
+
+| Code | Name | Severity | Description |
+|------|------|----------|-------------|
+| WLS-FLW-001 | dead_end | warning | Passage has no exits |
+| WLS-FLW-002 | unreachable_code | warning | Code after unconditional navigation |
+| WLS-FLW-003 | cycle_detected | info | Flow cycle in story |
+| WLS-FLW-004 | infinite_loop | error | Guaranteed infinite loop |
+| WLS-FLW-005 | unclosed_conditional | error | Missing `{/}` |
+| WLS-FLW-006 | orphan_else | error | `{else}` without conditional |
+| WLS-FLW-007 | invalid_gather_placement | error | Gather without preceding choices |
+| WLS-FLW-008 | unreachable_gather | warning | Gather can never be reached |
+| WLS-FLW-009 | tunnel_target_not_found | error | Tunnel to undefined passage |
+| WLS-FLW-010 | missing_tunnel_return | warning | Tunnel has no `<-` |
+| WLS-FLW-011 | orphan_tunnel_return | error | `<-` outside tunnel context |
+
 ---
 
 **Previous Chapter:** [Variables](04-VARIABLES.md)

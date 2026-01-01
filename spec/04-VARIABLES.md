@@ -129,13 +129,64 @@ $result = $a or $b     // Logical OR
 $result = not $a       // Logical NOT
 ```
 
-### 4.3.4 Type Summary
+### 4.3.4 List
+
+Lists are enumerated sets of named values. They are useful for tracking states, inventory items, and flags.
+
+```whisker
+LIST moods = happy, sad, angry, neutral
+LIST inventory = (sword), (shield), potion  // parentheses = initially active
+
+{$mood = neutral}       // Set value
+{$mood == happy}        // Test value
+{$inventory += sword}   // Add to list
+{$inventory -= sword}   // Remove from list
+{$inventory ? sword}    // Check if contains
+```
+
+See Section 4.13 for complete LIST documentation.
+
+### 4.3.5 Array
+
+Arrays are ordered, indexed collections of values.
+
+```whisker
+ARRAY items = ["sword", "shield", "potion"]
+ARRAY scores = [100, 95, 87, 92]
+
+${$items[0]}            // Access by index (0-based)
+${#$items}              // Length
+{$items += "bow"}       // Append
+{$items[1] = "axe"}     // Replace at index
+```
+
+See Section 4.14 for complete ARRAY documentation.
+
+### 4.3.6 Map
+
+Maps are key-value collections for structured data.
+
+```whisker
+MAP player = { name: "Hero", health: 100, level: 1 }
+
+${$player.name}         // Dot access
+${$player["health"]}    // Bracket access
+{$player.level += 1}    // Modify property
+{$player.mana = 50}     // Add property
+```
+
+See Section 4.15 for complete MAP documentation.
+
+### 4.3.7 Type Summary
 
 | Type | Literals | Default | Falsy Value |
 |------|----------|---------|-------------|
 | number | `42`, `3.14`, `-10` | `0` | `0` |
 | string | `"text"` | `""` | `""` (empty) |
 | boolean | `true`, `false` | `false` | `false` |
+| list | `LIST name = a, b, c` | empty list | empty list |
+| array | `[1, 2, 3]` | `[]` | `[]` (empty) |
+| map | `{ key: value }` | `{}` | `{}` (empty) |
 
 ## 4.4 Variable Scopes
 
@@ -535,6 +586,305 @@ end
 -- Get all variables
 local all = whisker.state.all()
 ```
+
+## 4.13 Lists (Enumerated Sets)
+
+### 4.13.1 Overview
+
+Lists are enumerated sets of named values, inspired by Ink's LIST type. They are ideal for tracking states, inventory items, character traits, and other categorical data.
+
+### 4.13.2 Declaration Syntax
+
+```whisker
+LIST listName = value1, value2, value3
+LIST listName = (active1), (active2), inactive1  // parentheses = initially active
+```
+
+**Rules:**
+- List values are identifiers (no quotes needed)
+- Values in parentheses are initially active (in the set)
+- Values without parentheses are defined but not initially active
+- List names follow variable naming rules
+
+### 4.13.3 List Operations
+
+| Operation | Syntax | Description |
+|-----------|--------|-------------|
+| Add | `{$list += value}` | Add value to set |
+| Remove | `{$list -= value}` | Remove value from set |
+| Toggle | `{$list ~= value}` | Toggle value in/out of set |
+| Contains | `{$list ? value}` | Check if value is in set |
+| Set single | `{$list = value}` | Clear list and set single value |
+| Clear | `{$list = ()}` | Remove all values |
+
+### 4.13.4 List Comparisons
+
+```whisker
+{$mood == happy}         // True if only 'happy' is active
+{$mood ? happy}          // True if 'happy' is among active values
+{$inventory ? sword}     // True if sword is in inventory
+{#$inventory == 0}       // True if inventory is empty
+{#$inventory > 2}        // True if more than 2 items
+```
+
+### 4.13.5 List Examples
+
+```whisker
+// Define moods with 'neutral' initially active
+LIST moods = happy, sad, angry, (neutral)
+
+:: Start
+Your mood is $moods.
+
++ [Feel happy] {$moods = happy}
++ [Feel sad] {$moods = sad}
++ [Mixed feelings] {$moods += happy; $moods += sad}
+
+- Continue with your mood: $moods.
+
+// Inventory example
+LIST inventory = sword, shield, potion, key
+
+:: Shop
+{$inventory += sword}
+You bought a sword!
+
+{ $inventory ? sword }
+  You already have a sword.
+{/}
+```
+
+### 4.13.6 List Serialization
+
+Lists are serialized as arrays of active value names:
+
+```json
+{
+  "moods": ["happy", "neutral"],
+  "inventory": ["sword", "shield"]
+}
+```
+
+## 4.14 Arrays
+
+### 4.14.1 Overview
+
+Arrays are ordered, indexed collections of values. They support mixed types and provide efficient access by index.
+
+### 4.14.2 Declaration Syntax
+
+```whisker
+ARRAY arrayName = [value1, value2, value3]
+ARRAY empty = []
+ARRAY mixed = [1, "two", true, 3.14]
+```
+
+**Rules:**
+- Array literals use square brackets `[]`
+- Elements are comma-separated
+- Elements can be any type (number, string, boolean, or nested collections)
+- Indices are 0-based
+
+### 4.14.3 Array Access
+
+```whisker
+${$items[0]}              // First element (0-based)
+${$items[#$items - 1]}    // Last element
+${$items[-1]}             // Also last element (negative indexing)
+```
+
+**Negative indexing:**
+- `[-1]` = last element
+- `[-2]` = second-to-last
+- Out of bounds access returns nil
+
+### 4.14.4 Array Operations
+
+| Operation | Syntax | Description |
+|-----------|--------|-------------|
+| Append | `{$arr += value}` | Add to end |
+| Prepend | `{$arr = [value] .. $arr}` | Add to beginning |
+| Set index | `{$arr[i] = value}` | Set element at index |
+| Length | `${#$arr}` | Get array length |
+| Pop | `{_last = whisker.array.pop($arr)}` | Remove and return last |
+| Shift | `{_first = whisker.array.shift($arr)}` | Remove and return first |
+| Slice | `{_sub = whisker.array.slice($arr, 1, 3)}` | Get subarray |
+
+### 4.14.5 Array Iteration
+
+Arrays can be iterated in conditions:
+
+```whisker
+ARRAY scores = [100, 95, 87, 92]
+
+{ whisker.array.contains($scores, 100) }
+  Perfect score achieved!
+{/}
+
+// Display all scores
+{| $scores[0] | $scores[1] | $scores[2] | $scores[3] |}
+```
+
+### 4.14.6 Array Examples
+
+```whisker
+ARRAY inventory = []
+
+:: Shop
++ [Buy sword] {$inventory += "sword"} -> Bought
++ [Buy shield] {$inventory += "shield"} -> Bought
++ [Check inventory] -> CheckInventory
+
+:: Bought
+Item added! You now have ${#$inventory} items.
+-> Shop
+
+:: CheckInventory
+Your inventory:
+{ #$inventory == 0 }
+  Empty!
+{else}
+  ${#$inventory} items: $inventory
+{/}
+-> Shop
+```
+
+### 4.14.7 Array Serialization
+
+Arrays are serialized as JSON arrays:
+
+```json
+{
+  "inventory": ["sword", "shield", "potion"],
+  "scores": [100, 95, 87]
+}
+```
+
+## 4.15 Maps
+
+### 4.15.1 Overview
+
+Maps are key-value collections for structured data. They are ideal for representing complex objects like player stats, NPC data, or game configuration.
+
+### 4.15.2 Declaration Syntax
+
+```whisker
+MAP mapName = { key1: value1, key2: value2 }
+MAP empty = {}
+MAP player = {
+  name: "Hero",
+  health: 100,
+  level: 1,
+  inventory: ["sword", "shield"]
+}
+```
+
+**Rules:**
+- Map literals use curly braces `{}`
+- Keys are identifiers or quoted strings
+- Values can be any type
+- Trailing commas are allowed
+
+### 4.15.3 Map Access
+
+```whisker
+${$player.name}           // Dot notation
+${$player["name"]}        // Bracket notation
+${$player.stats.strength} // Nested access
+```
+
+**Access rules:**
+- Dot notation for identifier keys
+- Bracket notation for dynamic keys or non-identifier keys
+- Accessing undefined keys returns nil
+
+### 4.15.4 Map Operations
+
+| Operation | Syntax | Description |
+|-----------|--------|-------------|
+| Set property | `{$map.key = value}` | Set or add property |
+| Delete | `{$map.key = nil}` | Remove property |
+| Has key | `{$map.key ~= nil}` | Check if key exists |
+| Get keys | `${whisker.map.keys($map)}` | Get array of keys |
+| Get values | `${whisker.map.values($map)}` | Get array of values |
+| Merge | `{$map = whisker.map.merge($map1, $map2)}` | Combine maps |
+
+### 4.15.5 Nested Maps
+
+```whisker
+MAP game = {
+  player: {
+    name: "Hero",
+    stats: {
+      health: 100,
+      mana: 50
+    }
+  },
+  settings: {
+    difficulty: "normal"
+  }
+}
+
+:: Start
+Welcome, ${$game.player.name}!
+Health: ${$game.player.stats.health}
+Difficulty: ${$game.settings.difficulty}
+
++ [Take damage] {$game.player.stats.health -= 10}
+  You now have ${$game.player.stats.health} health.
+```
+
+### 4.15.6 Map Examples
+
+```whisker
+MAP player = {
+  name: "Adventurer",
+  class: "warrior",
+  level: 1,
+  gold: 100,
+  skills: ["slash", "block"]
+}
+
+:: CharacterSheet
+# ${$player.name}
+Class: ${$player.class}
+Level: ${$player.level}
+Gold: ${$player.gold}
+
++ [Level up] {$player.level += 1; $player.gold -= 50}
+  { $player.gold >= 50 }
+    Leveled up to ${$player.level}!
+  {else}
+    Not enough gold!
+  {/}
++ [Learn skill] {$player.skills += "power_strike"}
+  Learned Power Strike!
+```
+
+### 4.15.7 Map Serialization
+
+Maps are serialized as JSON objects:
+
+```json
+{
+  "player": {
+    "name": "Hero",
+    "health": 100,
+    "level": 1,
+    "inventory": ["sword", "shield"]
+  }
+}
+```
+
+## 4.16 Collection Error Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| WLS-TYP-006 | invalid_list_operation | Operation not valid for list type |
+| WLS-TYP-007 | array_index_invalid | Array index out of bounds or invalid |
+| WLS-TYP-008 | map_key_invalid | Map key is not a string or identifier |
+| WLS-TYP-009 | collection_type_mismatch | Expected collection, got scalar |
+| WLS-TYP-010 | nested_access_on_scalar | Attempted nested access on non-collection |
 
 ---
 
