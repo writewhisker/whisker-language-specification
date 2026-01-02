@@ -1,0 +1,227 @@
+# Runtime Tests
+# Tests for story execution and runtime behavior
+
+- name: runtime-basic-playthrough
+  description: Basic story playthrough
+  input: |
+    :: Start
+    Hello!
+    + [Continue] -> End
+
+    :: End
+    Goodbye!
+  expected:
+    passages: 2
+    valid: true
+    output_contains: Hello!
+
+- name: runtime-choice-first
+  description: Select first choice
+  input: |
+    :: Start
+    Choose:
+    + [A] -> ResultA
+    + [B] -> ResultB
+
+    :: ResultA
+    You chose A.
+
+    :: ResultB
+    You chose B.
+  expected:
+    passages: 3
+    valid: true
+
+- name: runtime-choice-second
+  description: Multiple choices available
+  input: |
+    :: Start
+    + [First] -> R1
+    + [Second] -> R2
+    + [Third] -> R3
+
+    :: R1
+    First.
+
+    :: R2
+    Second.
+
+    :: R3
+    Third.
+  expected:
+    passages: 4
+    valid: true
+
+- name: runtime-variable-display
+  description: Variable interpolation in output
+  input: |
+    :: Start
+    {do $name = "Alice"}
+    Hello, $name!
+  expected:
+    passages: 1
+    valid: true
+    variables: [name]
+
+- name: runtime-variable-number
+  description: Numeric variable
+  input: |
+    :: Start
+    {do $score = 100}
+    Your score: $score
+  expected:
+    passages: 1
+    valid: true
+    variables: [score]
+
+- name: runtime-variable-boolean
+  description: Boolean variable
+  input: |
+    :: Start
+    {do $hasKey = true}
+    Has key: $hasKey
+  expected:
+    passages: 1
+    valid: true
+    variables: [hasKey]
+
+- name: runtime-variable-update
+  description: Update variable value
+  input: |
+    :: Start
+    {do $count = 0}
+    {do $count = 1}
+    Count: $count
+  expected:
+    passages: 1
+    valid: true
+    variables: [count]
+
+- name: runtime-multiple-variables
+  description: Multiple variables in story
+  input: |
+    :: Start
+    {do $name = "Player"}
+    {do $health = 100}
+    {do $gold = 50}
+    {do $hasWeapon = false}
+    Status: $name, HP: $health, Gold: $gold
+  expected:
+    passages: 1
+    valid: true
+    variables: [name, health, gold, hasWeapon]
+
+- name: runtime-end-passage
+  description: Story reaches END
+  input: |
+    :: Start
+    The story ends.
+    + [Finish] -> END
+  expected:
+    passages: 1
+    valid: true
+
+- name: runtime-no-choices
+  description: Passage without choices ends story
+  input: |
+    :: Start
+    + [Go] -> End
+
+    :: End
+    No choices here.
+  expected:
+    passages: 2
+    valid: true
+
+- name: runtime-linear-playthrough
+  description: Linear story progression
+  input: |
+    :: Start
+    Page 1.
+    + [Next] -> P2
+
+    :: P2
+    Page 2.
+    + [Next] -> P3
+
+    :: P3
+    Page 3.
+    + [Next] -> End
+
+    :: End
+    The End.
+  expected:
+    passages: 4
+    valid: true
+
+- name: runtime-branch-converge
+  description: Branches that converge
+  input: |
+    :: Start
+    + [Left] -> Left
+    + [Right] -> Right
+
+    :: Left
+    Left path.
+    + [Continue] -> End
+
+    :: Right
+    Right path.
+    + [Continue] -> End
+
+    :: End
+    Both paths end here.
+  expected:
+    passages: 4
+    valid: true
+
+- name: runtime-loop-detection
+  description: Story with potential loop
+  input: |
+    :: Start
+    + [Loop] -> Middle
+    + [Exit] -> End
+
+    :: Middle
+    + [Back] -> Start
+    + [Exit] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 3
+    valid: true
+
+- name: runtime-hub-navigation
+  description: Hub-based navigation
+  input: |
+    :: Hub
+    + [Room A] -> RoomA
+    + [Room B] -> RoomB
+    + [Exit] -> End
+
+    :: RoomA
+    Room A.
+    + [Return] -> Hub
+
+    :: RoomB
+    Room B.
+    + [Return] -> Hub
+
+    :: End
+    Goodbye.
+  expected:
+    passages: 4
+    valid: true
+
+- name: runtime-content-preservation
+  description: Content preserved in output
+  input: |
+    :: Start
+    Line 1.
+    Line 2.
+    Line 3.
+  expected:
+    passages: 1
+    valid: true
+    output_contains: Line 2

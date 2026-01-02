@@ -1,0 +1,308 @@
+# Regression Tests
+# Tests for previously fixed bugs and edge cases
+
+- name: reg-empty-passage-name
+  description: Regression - Empty passage name handling
+  input: |
+    :: Start
+    Valid passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-whitespace-only-content
+  description: Regression - Whitespace only content
+  input: |
+    :: Start
+
+    + [Next] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-multiple-colons
+  description: Regression - Colons in passage name
+  input: |
+    :: Time: 10:30 AM
+    Content with time in title.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-brackets-in-content
+  description: Regression - Brackets not being links
+  input: |
+    :: Start
+    [This is not a link]
+    (Neither is this)
+    {Or this}
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-consecutive-passages
+  description: Regression - Consecutive passage headers
+  input: |
+    :: First
+    :: Second
+    Content.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-trailing-whitespace
+  description: Regression - Trailing whitespace in names
+  input: |
+    :: Start
+    Content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-link-with-spaces
+  description: Regression - Link text with spaces
+  input: |
+    :: Start
+    + [This is a long choice text] -> Next
+
+    :: Next
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-special-link-characters
+  description: Regression - Special characters in link text
+  input: |
+    :: Start
+    + [What's next?] -> Next
+    + [Go "home"] -> Home
+
+    :: Next
+    Next.
+
+    :: Home
+    Home.
+  expected:
+    passages: 3
+    valid: true
+
+- name: reg-unicode-in-links
+  description: Regression - Unicode in link targets
+  input: |
+    :: Start
+    + [日本語] -> 終わり
+
+    :: 終わり
+    End in Japanese.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-numeric-choice-text
+  description: Regression - Numeric choice text
+  input: |
+    :: Start
+    + [1] -> One
+    + [2] -> Two
+    + [3] -> Three
+
+    :: One
+    One.
+
+    :: Two
+    Two.
+
+    :: Three
+    Three.
+  expected:
+    passages: 4
+    valid: true
+
+- name: reg-empty-choice-text
+  description: Regression - Minimal choice text
+  input: |
+    :: Start
+    + [.] -> Next
+
+    :: Next
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-deeply-nested
+  description: Regression - Deep nesting without issues
+  input: |
+    :: L1
+    + [Go] -> L2
+
+    :: L2
+    + [Go] -> L3
+
+    :: L3
+    + [Go] -> L4
+
+    :: L4
+    + [Go] -> L5
+
+    :: L5
+    + [Go] -> L6
+
+    :: L6
+    + [Go] -> L7
+
+    :: L7
+    + [Go] -> L8
+
+    :: L8
+    + [Go] -> L9
+
+    :: L9
+    + [Go] -> L10
+
+    :: L10
+    End of deep chain.
+  expected:
+    passages: 10
+    valid: true
+
+- name: reg-self-reference
+  description: Regression - Self-referencing passage
+  input: |
+    :: Loop
+    + [Again] -> Loop
+    + [Exit] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-circular-references
+  description: Regression - Circular reference chain
+  input: |
+    :: A
+    + [Go] -> B
+
+    :: B
+    + [Go] -> C
+
+    :: C
+    + [Go] -> A
+    + [Exit] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 4
+    valid: true
+
+- name: reg-duplicate-link-targets
+  description: Regression - Multiple links to same target
+  input: |
+    :: Start
+    + [Option 1] -> End
+    + [Option 2] -> End
+    + [Option 3] -> End
+
+    :: End
+    All roads lead here.
+  expected:
+    passages: 2
+    valid: true
+
+- name: reg-passage-name-with-numbers-only
+  description: Regression - All-numeric passage name
+  input: |
+    :: 12345
+    Numeric passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-very-long-content
+  description: Regression - Very long passage content
+  input: |
+    :: Start
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-many-choices
+  description: Regression - Many choices in one passage
+  input: |
+    :: Start
+    + [A] -> A
+    + [B] -> B
+    + [C] -> C
+    + [D] -> D
+    + [E] -> E
+    + [F] -> F
+    + [G] -> G
+    + [H] -> H
+    + [I] -> I
+    + [J] -> J
+
+    :: A
+    A.
+
+    :: B
+    B.
+
+    :: C
+    C.
+
+    :: D
+    D.
+
+    :: E
+    E.
+
+    :: F
+    F.
+
+    :: G
+    G.
+
+    :: H
+    H.
+
+    :: I
+    I.
+
+    :: J
+    J.
+  expected:
+    passages: 11
+    valid: true
+
+- name: reg-newlines-preserved
+  description: Regression - Newlines in content preserved
+  input: |
+    :: Start
+    Line 1.
+
+    Line 2.
+
+
+    Line 3 after double newline.
+  expected:
+    passages: 1
+    valid: true
+
+- name: reg-mixed-indentation
+  description: Regression - Mixed tabs and spaces
+  input: |
+    :: Start
+    	Tab indented.
+        Space indented.
+      Mixed.
+  expected:
+    passages: 1
+    valid: true

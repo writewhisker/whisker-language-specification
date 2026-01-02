@@ -1,0 +1,408 @@
+# Basic WLS Feature Tests
+# Tests fundamental Whisker Language Specification features
+
+- name: basic-single-passage
+  description: Single passage with content
+  input: |
+    :: Start
+    Hello, world!
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-two-passages
+  description: Two connected passages
+  input: |
+    :: Start
+    Beginning.
+    + [Continue] -> End
+
+    :: End
+    The end.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-three-passages-linear
+  description: Three passages in sequence
+  input: |
+    :: Start
+    Part one.
+    + [Next] -> Middle
+
+    :: Middle
+    Part two.
+    + [Next] -> End
+
+    :: End
+    Part three.
+  expected:
+    passages: 3
+    valid: true
+
+- name: basic-branching
+  description: Story with branching paths
+  input: |
+    :: Start
+    Choose your path:
+    + [Go left] -> Left
+    + [Go right] -> Right
+
+    :: Left
+    You went left.
+    + [Continue] -> End
+
+    :: Right
+    You went right.
+    + [Continue] -> End
+
+    :: End
+    Both paths lead here.
+  expected:
+    passages: 4
+    valid: true
+
+- name: basic-passage-title-spaces
+  description: Passage title with spaces
+  input: |
+    :: My First Passage
+    Content here.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-passage-title-numbers
+  description: Passage title with numbers
+  input: |
+    :: Chapter 1
+    The first chapter.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-passage-empty-content
+  description: Passage with empty content
+  input: |
+    :: Start
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-multiline-content
+  description: Passage with multiple paragraphs
+  input: |
+    :: Start
+    First paragraph.
+
+    Second paragraph.
+
+    Third paragraph.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-special-characters
+  description: Content with special characters
+  input: |
+    :: Start
+    Special chars: @#$%^&*()_+-=[]{}|;':",./<>?
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-unicode-content
+  description: Content with unicode characters
+  input: |
+    :: Start
+    Hello in Japanese: こんにちは
+    Hello in Chinese: 你好
+    Hello in Russian: Привет
+    Emoji: 🎮 📖 ✨
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-unicode-passage-name
+  description: Passage with unicode name
+  input: |
+    :: 開始
+    日本語のパッセージ
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-link-syntax-arrow
+  description: Link with arrow syntax
+  input: |
+    :: Start
+    + [Go] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-link-syntax-brackets
+  description: Link with bracket syntax
+  input: |
+    :: Start
+    [[End]]
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-link-syntax-pipe
+  description: Link with pipe syntax for display text
+  input: |
+    :: Start
+    [[End|Click here]]
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-multiple-choices
+  description: Passage with multiple choices
+  input: |
+    :: Start
+    What do you do?
+    + [Option A] -> A
+    + [Option B] -> B
+    + [Option C] -> C
+    + [Option D] -> D
+
+    :: A
+    You chose A.
+
+    :: B
+    You chose B.
+
+    :: C
+    You chose C.
+
+    :: D
+    You chose D.
+  expected:
+    passages: 5
+    valid: true
+
+- name: basic-mixed-link-styles
+  description: Mix of link syntaxes
+  input: |
+    :: Start
+    + [Arrow style] -> Middle
+    [[Bracket style|Middle]]
+
+    :: Middle
+    Both work.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-self-referencing
+  description: Passage linking to itself
+  input: |
+    :: Loop
+    You're stuck in a loop.
+    + [Try again] -> Loop
+    + [Exit] -> End
+
+    :: End
+    You escaped!
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-hub-structure
+  description: Hub and spoke structure
+  input: |
+    :: Hub
+    Central hub.
+    + [North] -> North
+    + [South] -> South
+    + [East] -> East
+    + [West] -> West
+
+    :: North
+    Northern area.
+    + [Return] -> Hub
+
+    :: South
+    Southern area.
+    + [Return] -> Hub
+
+    :: East
+    Eastern area.
+    + [Return] -> Hub
+
+    :: West
+    Western area.
+    + [Return] -> Hub
+  expected:
+    passages: 5
+    valid: true
+
+- name: basic-long-passage-content
+  description: Passage with very long content
+  input: |
+    :: Start
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-many-passages
+  description: Story with many passages
+  input: |
+    :: P1
+    + [Next] -> P2
+
+    :: P2
+    + [Next] -> P3
+
+    :: P3
+    + [Next] -> P4
+
+    :: P4
+    + [Next] -> P5
+
+    :: P5
+    + [Next] -> P6
+
+    :: P6
+    + [Next] -> P7
+
+    :: P7
+    + [Next] -> P8
+
+    :: P8
+    + [Next] -> P9
+
+    :: P9
+    + [Next] -> P10
+
+    :: P10
+    The end.
+  expected:
+    passages: 10
+    valid: true
+
+- name: basic-whitespace-handling
+  description: Various whitespace in passage header
+  input: |
+    ::    Start
+    Content with leading spaces preserved.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-tabs-in-content
+  description: Tabs in content
+  input: |
+    :: Start
+    	Tabbed line
+    		Double tabbed
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-windows-line-endings
+  description: Content with CRLF line endings
+  input: ":: Start\r\nLine one.\r\nLine two.\r\n+ [End] -> End\r\n\r\n:: End\r\nDone."
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-passage-tags
+  description: Passage with tags
+  input: |
+    :: Start [important visited]
+    Tagged passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-passage-metadata
+  description: Passage with metadata
+  input: |
+    :: Start {x:100 y:200}
+    Positioned passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-tags-and-metadata
+  description: Passage with both tags and metadata
+  input: |
+    :: Start [tag1 tag2] {x:0 y:0}
+    Full header.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-end-target
+  description: Link to special END target
+  input: |
+    :: Start
+    The story.
+    + [Finish] -> END
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-case-sensitivity
+  description: Passage names are case sensitive
+  input: |
+    :: Start
+    + [Upper] -> END
+    + [Lower] -> end
+
+    :: END
+    Uppercase END.
+
+    :: end
+    Lowercase end.
+  expected:
+    passages: 3
+    valid: true
+
+- name: basic-numeric-passage-name
+  description: Passage name that is a number
+  input: |
+    :: 1
+    Chapter 1.
+    + [Next] -> 2
+
+    :: 2
+    Chapter 2.
+  expected:
+    passages: 2
+    valid: true
+
+- name: basic-hyphenated-name
+  description: Passage name with hyphens
+  input: |
+    :: my-passage-name
+    Hyphenated.
+  expected:
+    passages: 1
+    valid: true
+
+- name: basic-underscored-name
+  description: Passage name with underscores
+  input: |
+    :: my_passage_name
+    Underscored.
+  expected:
+    passages: 1
+    valid: true

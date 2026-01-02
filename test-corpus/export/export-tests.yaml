@@ -1,0 +1,214 @@
+# Export Format Tests
+# Tests for story structure that should export correctly
+
+- name: export-html-basic
+  description: Basic story for HTML export
+  input: |
+    :: Start
+    Welcome to the interactive story!
+    + [Begin Adventure] -> Chapter1
+
+    :: Chapter1
+    The adventure begins.
+    + [Continue] -> End
+
+    :: End
+    The end.
+  expected:
+    passages: 3
+    valid: true
+
+- name: export-metadata-complete
+  description: Story with complete metadata
+  input: |
+    :: StoryTitle
+    My Interactive Story
+
+    :: StoryAuthor
+    Test Author
+
+    :: Start
+    Beginning of the story.
+  expected:
+    passages: 3
+    valid: true
+
+- name: export-large-story
+  description: Larger story for export testing
+  input: |
+    :: Start
+    Chapter 1: The Beginning
+    + [Next] -> Ch1P2
+
+    :: Ch1P2
+    More of chapter 1.
+    + [Next] -> Ch1P3
+
+    :: Ch1P3
+    End of chapter 1.
+    + [Next] -> Ch2P1
+
+    :: Ch2P1
+    Chapter 2: The Middle
+    + [Next] -> Ch2P2
+
+    :: Ch2P2
+    More of chapter 2.
+    + [Next] -> Ch2P3
+
+    :: Ch2P3
+    End of chapter 2.
+    + [Next] -> Ch3P1
+
+    :: Ch3P1
+    Chapter 3: The End
+    + [Next] -> Epilogue
+
+    :: Epilogue
+    And they lived happily ever after.
+  expected:
+    passages: 8
+    valid: true
+
+- name: export-epub-chapters
+  description: Story structured for ePub chapters
+  input: |
+    :: Chapter 1
+    First chapter content.
+    + [Next Chapter] -> Chapter 2
+
+    :: Chapter 2
+    Second chapter content.
+    + [Next Chapter] -> Chapter 3
+
+    :: Chapter 3
+    Final chapter content.
+  expected:
+    passages: 3
+    valid: true
+
+- name: export-pwa-installable
+  description: Story suitable for PWA export
+  input: |
+    :: Start
+    Welcome to this installable story!
+    + [Play] -> Game
+
+    :: Game
+    Playing the game...
+    + [Win] -> Win
+    + [Lose] -> Lose
+
+    :: Win
+    You won!
+
+    :: Lose
+    You lost. Try again?
+    + [Retry] -> Game
+  expected:
+    passages: 4
+    valid: true
+
+- name: export-special-characters-safe
+  description: Characters safe for all export formats
+  input: |
+    :: Start
+    Safe characters: A-Z, a-z, 0-9
+    Punctuation: . , ! ? ; :
+    Common symbols: @ # $ % & * ( )
+  expected:
+    passages: 1
+    valid: true
+
+- name: export-unicode-safe
+  description: Unicode that exports cleanly
+  input: |
+    :: Start
+    Japanese: テスト
+    Chinese: 测试
+    Korean: 테스트
+    Arabic: اختبار
+  expected:
+    passages: 1
+    valid: true
+
+- name: export-long-passage-names
+  description: Long but valid passage names
+  input: |
+    :: This Is A Very Long Passage Name That Should Still Work
+    Long name content.
+    + [Go to] -> Another Very Long Passage Name For Testing
+
+    :: Another Very Long Passage Name For Testing
+    End.
+  expected:
+    passages: 2
+    valid: true
+
+- name: export-nested-formatting
+  description: Nested text formatting
+  input: |
+    :: Start
+    *Italic text*
+    **Bold text**
+    ***Bold italic***
+    `Code text`
+  expected:
+    passages: 1
+    valid: true
+
+- name: export-lists
+  description: Lists in content
+  input: |
+    :: Start
+    Shopping list:
+    - Apples
+    - Bananas
+    - Oranges
+
+    Numbered list:
+    1. First
+    2. Second
+    3. Third
+  expected:
+    passages: 1
+    valid: true
+
+- name: export-complex-structure
+  description: Complex story structure
+  input: |
+    :: Intro
+    + [Start] -> Hub
+
+    :: Hub
+    + [Quest 1] -> Q1
+    + [Quest 2] -> Q2
+    + [Quest 3] -> Q3
+    + [Exit] -> End
+
+    :: Q1
+    Quest 1 content.
+    + [Complete] -> Hub
+
+    :: Q2
+    Quest 2 content.
+    + [Complete] -> Hub
+
+    :: Q3
+    Quest 3 content.
+    + [Complete] -> Hub
+
+    :: End
+    Thanks for playing!
+  expected:
+    passages: 6
+    valid: true
+
+- name: export-minimal
+  description: Minimal valid story for export
+  input: |
+    :: Start
+    Hello!
+  expected:
+    passages: 1
+    valid: true

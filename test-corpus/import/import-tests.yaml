@@ -1,0 +1,176 @@
+# Import Format Tests
+# Tests for importing stories from various formats
+
+- name: import-twine-basic
+  description: Basic Twine-style passage
+  input: |
+    :: Start
+    Hello from Twine format!
+    [[Next]]
+
+    :: Next
+    The end.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-twine-display-text
+  description: Twine link with display text
+  input: |
+    :: Start
+    [[Click here|Destination]]
+
+    :: Destination
+    You arrived.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-twine-position
+  description: Twine passage with position metadata
+  input: |
+    :: Start {"position":"100,200"}
+    Positioned passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-twine-size
+  description: Twine passage with size metadata
+  input: |
+    :: Start {"position":"0,0","size":"200,100"}
+    Sized passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-ink-knot
+  description: Ink-style knot syntax
+  input: |
+    :: start
+    === start ===
+    Hello from Ink!
+    + [Continue] -> ending
+
+    :: ending
+    === ending ===
+    The end.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-choicescript-label
+  description: ChoiceScript-style content
+  input: |
+    :: startup
+    *label startup
+    Welcome to the story!
+    + [Continue] -> next
+
+    :: next
+    The next part.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-markdown-links
+  description: Markdown-style links in content
+  input: |
+    :: Start
+    This is [a link](https://example.com) in markdown.
+    + [Next] -> End
+
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-html-content
+  description: HTML in passage content
+  input: |
+    :: Start
+    <b>Bold text</b> and <i>italic text</i>.
+    <p>Paragraph.</p>
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-mixed-formats
+  description: Content with mixed format hints
+  input: |
+    :: Start
+    Regular text.
+    [[Twine link|Next]]
+    + [Arrow choice] -> Next
+
+    :: Next
+    End.
+  expected:
+    passages: 2
+    valid: true
+
+- name: import-special-passage-start
+  description: Standard Start passage name
+  input: |
+    :: Start
+    This is the start.
+  expected:
+    passages: 1
+    valid: true
+    start_passage: Start
+
+- name: import-alternative-start-begin
+  description: Alternative start passage - Begin
+  input: |
+    :: Begin
+    Alternative start.
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-json-embedded
+  description: JSON-like content in passage
+  input: |
+    :: Start
+    {"key": "value", "number": 42}
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-code-blocks
+  description: Code block in content
+  input: |
+    :: Start
+    ```javascript
+    console.log("Hello");
+    ```
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-yaml-frontmatter
+  description: YAML-like frontmatter
+  input: |
+    :: Start
+    ---
+    title: My Story
+    author: Author Name
+    ---
+    Story content here.
+  expected:
+    passages: 1
+    valid: true
+
+- name: import-escaped-brackets
+  description: Escaped bracket characters
+  input: |
+    :: Start
+    This has \[escaped\] brackets.
+    [[Real Link|Next]]
+
+    :: Next
+    End.
+  expected:
+    passages: 2
+    valid: true

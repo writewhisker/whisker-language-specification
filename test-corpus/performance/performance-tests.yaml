@@ -1,0 +1,311 @@
+# Performance Tests
+# Tests for performance characteristics and limits
+
+- name: perf-50-passages
+  description: Story with 50 passages
+  input: |
+    :: P1
+    + [Go] -> P2
+    :: P2
+    + [Go] -> P3
+    :: P3
+    + [Go] -> P4
+    :: P4
+    + [Go] -> P5
+    :: P5
+    + [Go] -> P6
+    :: P6
+    + [Go] -> P7
+    :: P7
+    + [Go] -> P8
+    :: P8
+    + [Go] -> P9
+    :: P9
+    + [Go] -> P10
+    :: P10
+    + [Go] -> P11
+    :: P11
+    + [Go] -> P12
+    :: P12
+    + [Go] -> P13
+    :: P13
+    + [Go] -> P14
+    :: P14
+    + [Go] -> P15
+    :: P15
+    + [Go] -> P16
+    :: P16
+    + [Go] -> P17
+    :: P17
+    + [Go] -> P18
+    :: P18
+    + [Go] -> P19
+    :: P19
+    + [Go] -> P20
+    :: P20
+    + [Go] -> P21
+    :: P21
+    + [Go] -> P22
+    :: P22
+    + [Go] -> P23
+    :: P23
+    + [Go] -> P24
+    :: P24
+    + [Go] -> P25
+    :: P25
+    + [Go] -> P26
+    :: P26
+    + [Go] -> P27
+    :: P27
+    + [Go] -> P28
+    :: P28
+    + [Go] -> P29
+    :: P29
+    + [Go] -> P30
+    :: P30
+    + [Go] -> P31
+    :: P31
+    + [Go] -> P32
+    :: P32
+    + [Go] -> P33
+    :: P33
+    + [Go] -> P34
+    :: P34
+    + [Go] -> P35
+    :: P35
+    + [Go] -> P36
+    :: P36
+    + [Go] -> P37
+    :: P37
+    + [Go] -> P38
+    :: P38
+    + [Go] -> P39
+    :: P39
+    + [Go] -> P40
+    :: P40
+    + [Go] -> P41
+    :: P41
+    + [Go] -> P42
+    :: P42
+    + [Go] -> P43
+    :: P43
+    + [Go] -> P44
+    :: P44
+    + [Go] -> P45
+    :: P45
+    + [Go] -> P46
+    :: P46
+    + [Go] -> P47
+    :: P47
+    + [Go] -> P48
+    :: P48
+    + [Go] -> P49
+    :: P49
+    + [Go] -> P50
+    :: P50
+    End.
+  expected:
+    passages: 50
+    valid: true
+
+- name: perf-20-choices
+  description: Passage with 20 choices
+  input: |
+    :: Start
+    + [1] -> End
+    + [2] -> End
+    + [3] -> End
+    + [4] -> End
+    + [5] -> End
+    + [6] -> End
+    + [7] -> End
+    + [8] -> End
+    + [9] -> End
+    + [10] -> End
+    + [11] -> End
+    + [12] -> End
+    + [13] -> End
+    + [14] -> End
+    + [15] -> End
+    + [16] -> End
+    + [17] -> End
+    + [18] -> End
+    + [19] -> End
+    + [20] -> End
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: perf-50-variables
+  description: Story with many variables
+  input: |
+    :: Start
+    {do $v1 = 1}
+    {do $v2 = 2}
+    {do $v3 = 3}
+    {do $v4 = 4}
+    {do $v5 = 5}
+    {do $v6 = 6}
+    {do $v7 = 7}
+    {do $v8 = 8}
+    {do $v9 = 9}
+    {do $v10 = 10}
+    {do $v11 = 11}
+    {do $v12 = 12}
+    {do $v13 = 13}
+    {do $v14 = 14}
+    {do $v15 = 15}
+    {do $v16 = 16}
+    {do $v17 = 17}
+    {do $v18 = 18}
+    {do $v19 = 19}
+    {do $v20 = 20}
+    {do $v21 = 21}
+    {do $v22 = 22}
+    {do $v23 = 23}
+    {do $v24 = 24}
+    {do $v25 = 25}
+    Done.
+  expected:
+    passages: 1
+    valid: true
+
+- name: perf-long-content-2000
+  description: Passage with 2000+ characters
+  input: |
+    :: Start
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+  expected:
+    passages: 1
+    valid: true
+
+- name: perf-deeply-nested-conditionals
+  description: Nested conditional structure
+  input: |
+    :: Start
+    {if true}
+    Level 1
+    {if true}
+    Level 2
+    {if true}
+    Level 3
+    {if true}
+    Level 4
+    {if true}
+    Level 5
+    {/if}
+    {/if}
+    {/if}
+    {/if}
+    {/if}
+  expected:
+    passages: 1
+    valid: true
+
+- name: perf-complex-graph
+  description: Complex interconnected passages
+  input: |
+    :: A
+    + [B] -> B
+    + [C] -> C
+    + [D] -> D
+    :: B
+    + [A] -> A
+    + [C] -> C
+    + [E] -> E
+    :: C
+    + [A] -> A
+    + [B] -> B
+    + [F] -> F
+    :: D
+    + [A] -> A
+    + [E] -> E
+    + [G] -> G
+    :: E
+    + [B] -> B
+    + [D] -> D
+    + [End] -> End
+    :: F
+    + [C] -> C
+    + [G] -> G
+    + [End] -> End
+    :: G
+    + [D] -> D
+    + [F] -> F
+    + [End] -> End
+    :: End
+    Done.
+  expected:
+    passages: 8
+    valid: true
+
+- name: perf-long-passage-name
+  description: Very long passage name
+  input: |
+    :: This Is A Very Long Passage Name That Tests The Parser Handling Of Extended Titles
+    Content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: perf-many-links-content
+  description: Content with many inline links
+  input: |
+    :: Start
+    [[A]] [[B]] [[C]] [[D]] [[E]]
+    [[F]] [[G]] [[H]] [[I]] [[J]]
+    :: A
+    A.
+    :: B
+    B.
+    :: C
+    C.
+    :: D
+    D.
+    :: E
+    E.
+    :: F
+    F.
+    :: G
+    G.
+    :: H
+    H.
+    :: I
+    I.
+    :: J
+    J.
+  expected:
+    passages: 11
+    valid: true
+
+- name: perf-rapid-variable-updates
+  description: Multiple variable updates
+  input: |
+    :: Start
+    {do $x = 0}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    {do $x = $x + 1}
+    Result: $x
+  expected:
+    passages: 1
+    valid: true
+    variables: [x]
+
+- name: perf-minimal-memory
+  description: Minimal story for memory testing
+  input: |
+    :: Start
+    Hi.
+  expected:
+    passages: 1
+    valid: true

@@ -1,0 +1,401 @@
+# Integration Tests
+# Tests for combined features and cross-component behavior
+
+- name: int-full-game-simple
+  description: Complete simple game
+  input: |
+    :: Start
+    Welcome to the adventure!
+    {do $gold = 0}
+    {do $health = 100}
+    + [Begin Quest] -> Quest
+    + [Visit Shop] -> Shop
+
+    :: Quest
+    You find treasure!
+    {do $gold = $gold + 50}
+    + [Return] -> Start
+
+    :: Shop
+    Buy a potion?
+    + [Buy (20g)] -> BuyPotion
+    + [Leave] -> Start
+
+    :: BuyPotion
+    {if $gold >= 20}
+    {do $gold = $gold - 20}
+    {do $health = $health + 20}
+    Potion purchased!
+    {else}
+    Not enough gold!
+    {/if}
+    + [Back] -> Shop
+  expected:
+    passages: 4
+    valid: true
+    variables: [gold, health]
+
+- name: int-dialogue-quest
+  description: Quest with dialogue
+  input: |
+    :: Village
+    + [Talk to Elder] -> Elder
+    + [Leave] -> Forest
+
+    :: Elder
+    The dragon threatens us!
+    + [Accept quest] -> AcceptQuest
+    + [Decline] -> Village
+
+    :: AcceptQuest
+    {do $hasQuest = true}
+    Find the dragon's lair!
+    + [Go] -> Forest
+
+    :: Forest
+    {if $hasQuest}
+    You see the lair entrance.
+    + [Enter] -> DragonLair
+    {else}
+    Just trees...
+    + [Return] -> Village
+    {/if}
+
+    :: DragonLair
+    The dragon awaits!
+    + [Fight] -> Victory
+
+    :: Victory
+    You won!
+  expected:
+    passages: 6
+    valid: true
+    variables: [hasQuest]
+
+- name: int-save-state
+  description: Story with save-like state
+  input: |
+    :: Start
+    {do $checkpoint = "Start"}
+    {do $progress = 0}
+    + [Play] -> Level1
+
+    :: Level1
+    {do $checkpoint = "Level1"}
+    {do $progress = 1}
+    Level 1 complete!
+    + [Continue] -> Level2
+
+    :: Level2
+    {do $checkpoint = "Level2"}
+    {do $progress = 2}
+    Level 2 complete!
+    + [Continue] -> End
+
+    :: End
+    Game complete! Progress: $progress
+  expected:
+    passages: 4
+    valid: true
+    variables: [checkpoint, progress]
+
+- name: int-branching-variables
+  description: Variables affecting branches
+  input: |
+    :: Start
+    {do $alignment = 0}
+    + [Help the poor] -> GoodDeed
+    + [Ignore them] -> BadDeed
+    + [Check alignment] -> Check
+
+    :: GoodDeed
+    {do $alignment = $alignment + 10}
+    You helped!
+    + [Continue] -> Start
+
+    :: BadDeed
+    {do $alignment = $alignment - 10}
+    You ignored them.
+    + [Continue] -> Start
+
+    :: Check
+    Alignment: $alignment
+    {if $alignment > 20}
+    You are good!
+    {/if}
+    {if $alignment < -20}
+    You are evil!
+    {/if}
+    + [Back] -> Start
+  expected:
+    passages: 4
+    valid: true
+    variables: [alignment]
+
+- name: int-inventory-management
+  description: Basic inventory system
+  input: |
+    :: Room
+    {do $hasKey = false}
+    {do $hasSword = false}
+    + [Search drawer] -> Drawer
+    + [Open chest] -> Chest
+    + [Go north] -> LockedDoor
+
+    :: Drawer
+    {if $hasKey}
+    Already searched.
+    {else}
+    {do $hasKey = true}
+    Found a key!
+    {/if}
+    + [Back] -> Room
+
+    :: Chest
+    {if $hasSword}
+    Empty chest.
+    {else}
+    {do $hasSword = true}
+    Found a sword!
+    {/if}
+    + [Back] -> Room
+
+    :: LockedDoor
+    {if $hasKey}
+    Door unlocks!
+    + [Enter] -> End
+    {else}
+    Door is locked.
+    + [Back] -> Room
+    {/if}
+
+    :: End
+    You escaped!
+  expected:
+    passages: 5
+    valid: true
+    variables: [hasKey, hasSword]
+
+- name: int-combat-loop
+  description: Combat with loop
+  input: |
+    :: Combat
+    {do $playerHP = 50}
+    {do $enemyHP = 30}
+    + [Attack] -> PlayerAttack
+    + [Defend] -> PlayerDefend
+    + [Flee] -> Flee
+
+    :: PlayerAttack
+    {do $enemyHP = $enemyHP - 10}
+    You deal 10 damage!
+    + [Continue] -> EnemyTurn
+
+    :: PlayerDefend
+    You defend.
+    + [Continue] -> EnemyTurn
+
+    :: EnemyTurn
+    {do $playerHP = $playerHP - 5}
+    Enemy hits for 5!
+    {if $enemyHP <= 0}
+    + [Victory!] -> Victory
+    {else}
+    {if $playerHP <= 0}
+    + [Defeat...] -> Defeat
+    {else}
+    + [Next round] -> Combat
+    {/if}
+    {/if}
+
+    :: Flee
+    You escaped!
+
+    :: Victory
+    You won the battle!
+
+    :: Defeat
+    Game over.
+  expected:
+    passages: 7
+    valid: true
+    variables: [playerHP, enemyHP]
+
+- name: int-multi-ending
+  description: Multiple ending paths
+  input: |
+    :: Start
+    {do $kindness = 0}
+    {do $courage = 0}
+    + [Chapter 1] -> Ch1
+
+    :: Ch1
+    Help the stranger?
+    + [Yes] -> HelpStranger
+    + [No] -> IgnoreStranger
+
+    :: HelpStranger
+    {do $kindness = $kindness + 10}
+    + [Chapter 2] -> Ch2
+
+    :: IgnoreStranger
+    + [Chapter 2] -> Ch2
+
+    :: Ch2
+    Face the danger?
+    + [Yes] -> FaceDanger
+    + [No] -> AvoidDanger
+
+    :: FaceDanger
+    {do $courage = $courage + 10}
+    + [Ending] -> Ending
+
+    :: AvoidDanger
+    + [Ending] -> Ending
+
+    :: Ending
+    {if $kindness > 5}
+    {if $courage > 5}
+    Hero ending!
+    {else}
+    Kind ending.
+    {/if}
+    {else}
+    {if $courage > 5}
+    Brave ending.
+    {else}
+    Normal ending.
+    {/if}
+    {/if}
+  expected:
+    passages: 8
+    valid: true
+    variables: [kindness, courage]
+
+- name: int-puzzle-sequence
+  description: Puzzle with sequence
+  input: |
+    :: Start
+    {do $step = 0}
+    + [Puzzle Room] -> Puzzle
+
+    :: Puzzle
+    Complete the sequence.
+    {if $step == 0}
+    + [Press Red] -> PressRed
+    {/if}
+    {if $step == 1}
+    + [Press Blue] -> PressBlue
+    {/if}
+    {if $step == 2}
+    + [Press Green] -> PressGreen
+    {/if}
+    + [Reset] -> Reset
+
+    :: PressRed
+    {do $step = 1}
+    Red pressed!
+    + [Continue] -> Puzzle
+
+    :: PressBlue
+    {do $step = 2}
+    Blue pressed!
+    + [Continue] -> Puzzle
+
+    :: PressGreen
+    {do $step = 3}
+    Green pressed!
+    + [Continue] -> Success
+
+    :: Reset
+    {do $step = 0}
+    Sequence reset.
+    + [Try again] -> Puzzle
+
+    :: Success
+    Puzzle solved!
+  expected:
+    passages: 7
+    valid: true
+    variables: [step]
+
+- name: int-time-limited
+  description: Time-limited choices
+  input: |
+    :: Start
+    {do $time = 10}
+    + [Begin] -> Timer
+
+    :: Timer
+    Time: $time
+    {if $time <= 0}
+    + [Time's up!] -> GameOver
+    {else}
+    + [Action A] -> ActionA
+    + [Action B] -> ActionB
+    + [Wait] -> Wait
+    {/if}
+
+    :: ActionA
+    {do $time = $time - 3}
+    Did action A.
+    + [Continue] -> Timer
+
+    :: ActionB
+    {do $time = $time - 2}
+    Did action B.
+    + [Continue] -> Timer
+
+    :: Wait
+    {do $time = $time - 1}
+    Waited.
+    + [Continue] -> Timer
+
+    :: GameOver
+    Time ran out!
+  expected:
+    passages: 6
+    valid: true
+    variables: [time]
+
+- name: int-rpg-stats
+  description: RPG stat system
+  input: |
+    :: CharCreate
+    {do $str = 10}
+    {do $dex = 10}
+    {do $int = 10}
+    {do $points = 5}
+    + [Add STR] -> AddStr
+    + [Add DEX] -> AddDex
+    + [Add INT] -> AddInt
+    + [Done] -> Adventure
+
+    :: AddStr
+    {if $points > 0}
+    {do $str = $str + 1}
+    {do $points = $points - 1}
+    {/if}
+    + [Back] -> CharCreate
+
+    :: AddDex
+    {if $points > 0}
+    {do $dex = $dex + 1}
+    {do $points = $points - 1}
+    {/if}
+    + [Back] -> CharCreate
+
+    :: AddInt
+    {if $points > 0}
+    {do $int = $int + 1}
+    {do $points = $points - 1}
+    {/if}
+    + [Back] -> CharCreate
+
+    :: Adventure
+    STR: $str, DEX: $dex, INT: $int
+    Begin adventure!
+  expected:
+    passages: 5
+    valid: true
+    variables: [str, dex, int, points]

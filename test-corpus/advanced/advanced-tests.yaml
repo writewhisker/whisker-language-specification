@@ -1,0 +1,462 @@
+# Advanced Feature Tests
+# Tests for advanced WLS features and patterns
+
+- name: adv-deep-nesting-10
+  description: 10 levels of passage depth
+  input: |
+    :: L1
+    + [Go] -> L2
+    :: L2
+    + [Go] -> L3
+    :: L3
+    + [Go] -> L4
+    :: L4
+    + [Go] -> L5
+    :: L5
+    + [Go] -> L6
+    :: L6
+    + [Go] -> L7
+    :: L7
+    + [Go] -> L8
+    :: L8
+    + [Go] -> L9
+    :: L9
+    + [Go] -> L10
+    :: L10
+    End.
+  expected:
+    passages: 10
+    valid: true
+
+- name: adv-wide-branching
+  description: Wide branching structure
+  input: |
+    :: Start
+    + [A] -> A
+    + [B] -> B
+    + [C] -> C
+    + [D] -> D
+    + [E] -> E
+    :: A
+    A.
+    :: B
+    B.
+    :: C
+    C.
+    :: D
+    D.
+    :: E
+    E.
+  expected:
+    passages: 6
+    valid: true
+
+- name: adv-diamond-pattern
+  description: Diamond shaped story structure
+  input: |
+    :: Start
+    + [Left] -> Left
+    + [Right] -> Right
+    :: Left
+    + [Merge] -> Merge
+    :: Right
+    + [Merge] -> Merge
+    :: Merge
+    + [End] -> End
+    :: End
+    Done.
+  expected:
+    passages: 5
+    valid: true
+
+- name: adv-multi-hub
+  description: Multiple hub structure
+  input: |
+    :: MainHub
+    + [Hub A] -> HubA
+    + [Hub B] -> HubB
+    + [Exit] -> End
+    :: HubA
+    + [Room 1] -> A1
+    + [Room 2] -> A2
+    + [Return] -> MainHub
+    :: HubB
+    + [Room 3] -> B1
+    + [Room 4] -> B2
+    + [Return] -> MainHub
+    :: A1
+    + [Back] -> HubA
+    :: A2
+    + [Back] -> HubA
+    :: B1
+    + [Back] -> HubB
+    :: B2
+    + [Back] -> HubB
+    :: End
+    Done.
+  expected:
+    passages: 9
+    valid: true
+
+- name: adv-state-machine
+  description: State machine pattern
+  input: |
+    :: Idle
+    + [Start] -> Running
+    :: Running
+    + [Pause] -> Paused
+    + [Stop] -> Stopped
+    :: Paused
+    + [Resume] -> Running
+    + [Stop] -> Stopped
+    :: Stopped
+    Complete.
+  expected:
+    passages: 4
+    valid: true
+
+- name: adv-quest-system
+  description: Quest-like structure
+  input: |
+    :: QuestGiver
+    + [Accept Quest] -> Quest1
+    + [Decline] -> Town
+    :: Quest1
+    + [Complete] -> QuestComplete
+    + [Abandon] -> QuestGiver
+    :: QuestComplete
+    + [Collect Reward] -> Town
+    :: Town
+    + [Talk to NPC] -> QuestGiver
+    + [Leave] -> End
+    :: End
+    Done.
+  expected:
+    passages: 5
+    valid: true
+
+- name: adv-inventory-check
+  description: Inventory-like conditional pattern
+  input: |
+    :: Start
+    {do $hasKey = false}
+    + [Find Key] -> FindKey
+    + [Try Door] -> TryDoor
+    :: FindKey
+    {do $hasKey = true}
+    + [Return] -> Start
+    :: TryDoor
+    {if $hasKey}
+    Door opens!
+    {else}
+    Need a key.
+    {/if}
+  expected:
+    passages: 3
+    valid: true
+    variables: [hasKey]
+
+- name: adv-counter-loop
+  description: Counter-based progression
+  input: |
+    :: Start
+    {do $count = 0}
+    + [Continue] -> Count
+    :: Count
+    {do $count = $count + 1}
+    Count: $count
+    + [Again] -> Count
+    + [End] -> End
+    :: End
+    Final count: $count
+  expected:
+    passages: 3
+    valid: true
+    variables: [count]
+
+- name: adv-character-stats
+  description: Character stat tracking
+  input: |
+    :: Start
+    {do $health = 100}
+    {do $strength = 10}
+    {do $defense = 5}
+    {do $gold = 0}
+    + [Adventure] -> Adventure
+    :: Adventure
+    You find gold!
+    {do $gold = $gold + 10}
+    + [Continue] -> End
+    :: End
+    Stats: $health HP, $strength STR, $defense DEF, $gold Gold
+  expected:
+    passages: 3
+    valid: true
+    variables: [health, strength, defense, gold]
+
+- name: adv-dialogue-tree
+  description: Dialogue tree structure
+  input: |
+    :: NPC
+    Hello traveler!
+    + [Who are you?] -> NPCAbout
+    + [What's happening?] -> NPCNews
+    + [Goodbye] -> End
+    :: NPCAbout
+    I'm the innkeeper.
+    + [Tell me more] -> NPCMore
+    + [Back] -> NPC
+    :: NPCNews
+    Dark times ahead...
+    + [Back] -> NPC
+    :: NPCMore
+    I've been here 20 years.
+    + [Back] -> NPC
+    :: End
+    Done.
+  expected:
+    passages: 5
+    valid: true
+
+- name: adv-time-tracking
+  description: Time/turn tracking
+  input: |
+    :: Start
+    {do $turns = 0}
+    + [Begin] -> Room
+    :: Room
+    {do $turns = $turns + 1}
+    Turn $turns
+    + [Wait] -> Room
+    + [Exit] -> End
+    :: End
+    You took $turns turns.
+  expected:
+    passages: 3
+    valid: true
+    variables: [turns]
+
+- name: adv-reputation-system
+  description: Reputation tracking
+  input: |
+    :: Start
+    {do $reputation = 0}
+    + [Help farmer] -> Help
+    + [Steal from farmer] -> Steal
+    + [Ignore] -> Town
+    :: Help
+    {do $reputation = $reputation + 10}
+    + [Continue] -> Town
+    :: Steal
+    {do $reputation = $reputation - 20}
+    + [Continue] -> Town
+    :: Town
+    Reputation: $reputation
+  expected:
+    passages: 4
+    valid: true
+    variables: [reputation]
+
+- name: adv-multiple-endings
+  description: Story with multiple endings
+  input: |
+    :: Start
+    + [Path A] -> PathA
+    + [Path B] -> PathB
+    + [Path C] -> PathC
+    :: PathA
+    + [End] -> EndingA
+    :: PathB
+    + [End] -> EndingB
+    :: PathC
+    + [End] -> EndingC
+    :: EndingA
+    Ending A achieved!
+    :: EndingB
+    Ending B achieved!
+    :: EndingC
+    Ending C achieved!
+  expected:
+    passages: 7
+    valid: true
+
+- name: adv-achievement-tracking
+  description: Achievement unlock pattern
+  input: |
+    :: Start
+    {do $ach1 = false}
+    {do $ach2 = false}
+    + [Task 1] -> Task1
+    + [Task 2] -> Task2
+    + [Check] -> Check
+    :: Task1
+    {do $ach1 = true}
+    Task 1 complete!
+    + [Back] -> Start
+    :: Task2
+    {do $ach2 = true}
+    Task 2 complete!
+    + [Back] -> Start
+    :: Check
+    Achievement 1: $ach1
+    Achievement 2: $ach2
+    + [Back] -> Start
+  expected:
+    passages: 4
+    valid: true
+    variables: [ach1, ach2]
+
+- name: adv-puzzle-gate
+  description: Puzzle gating pattern
+  input: |
+    :: Start
+    {do $solved = false}
+    + [Puzzle Room] -> Puzzle
+    + [Gate] -> Gate
+    :: Puzzle
+    + [Solve] -> Solved
+    + [Back] -> Start
+    :: Solved
+    {do $solved = true}
+    Puzzle solved!
+    + [Back] -> Start
+    :: Gate
+    {if $solved}
+    Gate opens!
+    + [Enter] -> Beyond
+    {else}
+    Gate locked. Solve the puzzle first.
+    + [Back] -> Start
+    {/if}
+    :: Beyond
+    You made it!
+  expected:
+    passages: 5
+    valid: true
+    variables: [solved]
+
+- name: adv-combat-round
+  description: Combat round structure
+  input: |
+    :: Combat
+    {do $enemyHP = 50}
+    {do $playerHP = 100}
+    + [Attack] -> Attack
+    + [Defend] -> Defend
+    + [Flee] -> Flee
+    :: Attack
+    {do $enemyHP = $enemyHP - 10}
+    You deal 10 damage!
+    + [Continue] -> CombatCheck
+    :: Defend
+    {do $playerHP = $playerHP + 5}
+    You defend.
+    + [Continue] -> CombatCheck
+    :: Flee
+    You escaped!
+    :: CombatCheck
+    {if $enemyHP > 0}
+    Enemy HP: $enemyHP
+    + [Next Round] -> Combat
+    {else}
+    Victory!
+    {/if}
+  expected:
+    passages: 5
+    valid: true
+    variables: [enemyHP, playerHP]
+
+- name: adv-shop-system
+  description: Shop purchase pattern
+  input: |
+    :: Shop
+    {do $gold = 100}
+    {do $hasSword = false}
+    Gold: $gold
+    + [Buy Sword (50g)] -> BuySword
+    + [Leave] -> Town
+    :: BuySword
+    {if $gold >= 50}
+    {do $gold = $gold - 50}
+    {do $hasSword = true}
+    Sword purchased!
+    {else}
+    Not enough gold!
+    {/if}
+    + [Back] -> Shop
+    :: Town
+    Done shopping.
+  expected:
+    passages: 3
+    valid: true
+    variables: [gold, hasSword]
+
+- name: adv-day-night-cycle
+  description: Day/night cycle tracking
+  input: |
+    :: Start
+    {do $hour = 8}
+    {do $isDay = true}
+    + [Wait] -> Wait
+    + [Check Time] -> Check
+    :: Wait
+    {do $hour = $hour + 2}
+    {if $hour >= 20}
+    {do $isDay = false}
+    {/if}
+    {if $hour >= 24}
+    {do $hour = 0}
+    {/if}
+    + [Continue] -> Start
+    :: Check
+    Hour: $hour
+    Day: $isDay
+    + [Back] -> Start
+  expected:
+    passages: 3
+    valid: true
+    variables: [hour, isDay]
+
+- name: adv-conversation-memory
+  description: Conversation with memory
+  input: |
+    :: NPC
+    {do $talked = false}
+    {if $talked}
+    Welcome back!
+    {else}
+    First time meeting!
+    {do $talked = true}
+    {/if}
+    + [Talk again] -> NPC
+    + [Leave] -> End
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+    variables: [talked]
+
+- name: adv-random-encounter
+  description: Random-like encounter pattern
+  input: |
+    :: Travel
+    {do $encounter = 0}
+    {do $encounter = $encounter + 1}
+    {if $encounter > 3}
+    You encounter a monster!
+    + [Fight] -> Combat
+    {else}
+    Safe travels...
+    + [Continue] -> Travel
+    + [Camp] -> End
+    {/if}
+    :: Combat
+    Combat happens here.
+    + [Victory] -> Travel
+    :: End
+    Journey complete.
+  expected:
+    passages: 3
+    valid: true
+    variables: [encounter]

@@ -1,0 +1,191 @@
+# Error Handling Tests
+# Tests for invalid input and error detection
+
+- name: err-empty-input
+  description: Empty input
+  input: ""
+  expected:
+    passages: 0
+    valid: false
+
+- name: err-whitespace-only
+  description: Whitespace only input
+  input: "   \n\t\n   "
+  expected:
+    passages: 0
+    valid: false
+
+- name: err-no-passage-header
+  description: Content without passage header
+  input: |
+    Just some content without a passage header.
+  expected:
+    passages: 0
+    valid: false
+
+- name: err-missing-passage-name
+  description: Passage header without name
+  input: |
+    ::
+    Content.
+  expected:
+    valid: false
+
+- name: err-dead-link-simple
+  description: Link to non-existent passage
+  input: |
+    :: Start
+    + [Go] -> NonExistent
+  expected:
+    passages: 1
+    valid: false
+    errors: [WLS-LNK-001]
+
+- name: err-dead-link-bracket
+  description: Bracket link to non-existent passage
+  input: |
+    :: Start
+    [[Missing Passage]]
+  expected:
+    passages: 1
+    valid: false
+
+- name: err-multiple-dead-links
+  description: Multiple dead links
+  input: |
+    :: Start
+    + [A] -> Missing1
+    + [B] -> Missing2
+    + [C] -> Missing3
+  expected:
+    passages: 1
+    valid: false
+
+- name: err-circular-dead-link
+  description: Self-referencing to wrong name
+  input: |
+    :: Start
+    + [Loop] -> start
+  expected:
+    passages: 1
+    valid: false
+
+- name: err-case-mismatch-link
+  description: Case mismatch in link target
+  input: |
+    :: Start
+    + [Go] -> END
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: false
+
+- name: err-unclosed-brace
+  description: Unclosed brace in content
+  input: |
+    :: Start
+    {do $x = 5
+    Missing close brace.
+  expected:
+    passages: 1
+    valid: false
+
+- name: err-unclosed-bracket
+  description: Unclosed bracket link
+  input: |
+    :: Start
+    [[Unclosed link
+  expected:
+    valid: false
+
+- name: err-unmatched-conditional
+  description: Unmatched if/endif
+  input: |
+    :: Start
+    {if true}
+    No closing.
+  expected:
+    valid: false
+
+- name: err-invalid-variable-name
+  description: Invalid variable name
+  input: |
+    :: Start
+    {do $123invalid = 5}
+  expected:
+    valid: false
+
+- name: err-orphan-passage
+  description: Unreachable passage
+  input: |
+    :: Start
+    + [Go] -> End
+    :: End
+    Done.
+    :: Orphan
+    Never reached.
+  expected:
+    passages: 3
+    valid: true
+    errors: [WLS-STR-002]
+
+- name: err-multiple-orphans
+  description: Multiple unreachable passages
+  input: |
+    :: Start
+    Done.
+    :: Orphan1
+    Never.
+    :: Orphan2
+    Also never.
+    :: Orphan3
+    Never reached.
+  expected:
+    passages: 4
+    valid: true
+
+- name: err-empty-choice-text
+  description: Empty choice text
+  input: |
+    :: Start
+    + [] -> End
+    :: End
+    Done.
+  expected:
+    valid: false
+
+- name: err-empty-link-target
+  description: Empty link target
+  input: |
+    :: Start
+    + [Go] ->
+  expected:
+    valid: false
+
+- name: err-duplicate-passage
+  description: Duplicate passage names
+  input: |
+    :: Start
+    First.
+    :: Start
+    Second.
+  expected:
+    valid: false
+
+- name: err-invalid-json-metadata
+  description: Invalid JSON in metadata
+  input: |
+    :: Start {invalid json}
+    Content.
+  expected:
+    valid: false
+
+- name: err-recursive-variable
+  description: Recursive variable reference
+  input: |
+    :: Start
+    {do $x = $x + 1}
+  expected:
+    passages: 1
+    valid: false

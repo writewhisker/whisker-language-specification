@@ -1,0 +1,311 @@
+# Parser Tests
+# Tests for WLS parser functionality
+
+- name: parser-passage-header-simple
+  description: Simple passage header
+  input: |
+    :: Start
+    Content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-passage-header-whitespace
+  description: Passage header with extra whitespace
+  input: |
+    ::   Spaced Title
+    Content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-passage-header-tags
+  description: Passage header with tags
+  input: |
+    :: Start [tag1 tag2]
+    Tagged.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-passage-header-metadata
+  description: Passage header with metadata
+  input: |
+    :: Start {x:100}
+    With metadata.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-passage-header-full
+  description: Full passage header
+  input: |
+    :: Title [tag1] {x:0 y:0}
+    Full header.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-choice-arrow
+  description: Choice with arrow syntax
+  input: |
+    :: Start
+    + [Choice] -> Target
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-choice-unicode-arrow
+  description: Choice with unicode arrow
+  input: |
+    :: Start
+    + [Choice] → Target
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-choice-condition
+  description: Conditional choice
+  input: |
+    :: Start
+    + [Choice] {$flag} -> Target
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-link-simple
+  description: Simple bracket link
+  input: |
+    :: Start
+    [[Target]]
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-link-display-text
+  description: Link with display text
+  input: |
+    :: Start
+    [[Target|Click here]]
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-variable-declaration
+  description: Variable declaration
+  input: |
+    :: Start
+    {do $name = "Test"}
+    Hello $name
+  expected:
+    passages: 1
+    valid: true
+    variables: [name]
+
+- name: parser-variable-number
+  description: Numeric variable declaration
+  input: |
+    :: Start
+    {do $count = 42}
+    Count: $count
+  expected:
+    passages: 1
+    valid: true
+    variables: [count]
+
+- name: parser-variable-boolean-true
+  description: Boolean true declaration
+  input: |
+    :: Start
+    {do $flag = true}
+    Flag: $flag
+  expected:
+    passages: 1
+    valid: true
+    variables: [flag]
+
+- name: parser-variable-boolean-false
+  description: Boolean false declaration
+  input: |
+    :: Start
+    {do $flag = false}
+    Flag: $flag
+  expected:
+    passages: 1
+    valid: true
+    variables: [flag]
+
+- name: parser-conditional-simple
+  description: Simple conditional
+  input: |
+    :: Start
+    {if $flag}
+    Shown when true.
+    {/if}
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-conditional-else
+  description: Conditional with else
+  input: |
+    :: Start
+    {if $flag}
+    True branch.
+    {else}
+    False branch.
+    {/if}
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-comment-single
+  description: Single line comment
+  input: |
+    :: Start
+    // This is a comment
+    Visible content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-comment-block
+  description: Block comment
+  input: |
+    :: Start
+    /* This is
+       a block
+       comment */
+    Visible content.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-escape-sequence
+  description: Escape sequences
+  input: |
+    :: Start
+    Escaped bracket: \[
+    Escaped brace: \{
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-nested-braces
+  description: Nested braces in content
+  input: |
+    :: Start
+    {do $obj = {key: "value"}}
+    Object: $obj
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-multiple-passages
+  description: Multiple passage parsing
+  input: |
+    :: First
+    First passage.
+    + [Next] -> Second
+
+    :: Second
+    Second passage.
+    + [Next] -> Third
+
+    :: Third
+    Third passage.
+  expected:
+    passages: 3
+    valid: true
+
+- name: parser-empty-lines
+  description: Empty lines between passages
+  input: |
+    :: First
+    Content.
+
+
+    :: Second
+    More content.
+  expected:
+    passages: 2
+    valid: true
+
+- name: parser-unicode-content
+  description: Unicode in content
+  input: |
+    :: Start
+    日本語 中文 한국어 العربية
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-unicode-passage-name
+  description: Unicode passage name
+  input: |
+    :: 日本語
+    Japanese passage.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-special-chars-content
+  description: Special characters in content
+  input: |
+    :: Start
+    Special: !@#$%^&*()_+-=[]{}|;':",./<>?
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-multiline-passage
+  description: Multiline passage content
+  input: |
+    :: Start
+    Line 1.
+    Line 2.
+    Line 3.
+    Line 4.
+    Line 5.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-indented-content
+  description: Indented content preserved
+  input: |
+    :: Start
+      Indented line.
+        More indented.
+    Normal.
+  expected:
+    passages: 1
+    valid: true
+
+- name: parser-mixed-choices-links
+  description: Mixed choice and link syntax
+  input: |
+    :: Start
+    + [Arrow choice] -> Target
+    [[Bracket link|Target]]
+
+    :: Target
+    Done.
+  expected:
+    passages: 2
+    valid: true

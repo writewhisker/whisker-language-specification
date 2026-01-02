@@ -1,0 +1,238 @@
+# Unicode Tests
+# Tests for international character support
+
+- name: unicode-japanese
+  description: Japanese text
+  input: |
+    :: スタート
+    こんにちは世界！
+    + [続ける] -> 終わり
+    :: 終わり
+    さようなら。
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-chinese-simplified
+  description: Simplified Chinese
+  input: |
+    :: 开始
+    你好世界！
+    + [继续] -> 结束
+    :: 结束
+    再见。
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-chinese-traditional
+  description: Traditional Chinese
+  input: |
+    :: 開始
+    你好世界！
+    + [繼續] -> 結束
+    :: 結束
+    再見。
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-korean
+  description: Korean text
+  input: |
+    :: 시작
+    안녕하세요!
+    + [계속] -> 끝
+    :: 끝
+    안녕히가세요.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-arabic
+  description: Arabic RTL text
+  input: |
+    :: البداية
+    مرحبا بالعالم!
+    + [استمر] -> النهاية
+    :: النهاية
+    وداعا.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-hebrew
+  description: Hebrew RTL text
+  input: |
+    :: התחלה
+    שלום עולם!
+    + [המשך] -> סוף
+    :: סוף
+    להתראות.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-russian
+  description: Russian Cyrillic text
+  input: |
+    :: Начало
+    Привет мир!
+    + [Продолжить] -> Конец
+    :: Конец
+    До свидания.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-greek
+  description: Greek text
+  input: |
+    :: Αρχή
+    Γειά σου κόσμε!
+    + [Συνέχεια] -> Τέλος
+    :: Τέλος
+    Αντίο.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-thai
+  description: Thai text
+  input: |
+    :: เริ่มต้น
+    สวัสดีโลก!
+    + [ดำเนินการต่อ] -> จบ
+    :: จบ
+    ลาก่อน
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-hindi
+  description: Hindi Devanagari
+  input: |
+    :: शुरू
+    नमस्ते दुनिया!
+    + [जारी रखें] -> अंत
+    :: अंत
+    अलविदा।
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-emoji
+  description: Emoji characters
+  input: |
+    :: Start
+    Welcome! 🎮
+    + [Play 🕹️] -> Game
+    + [Exit 🚪] -> End
+    :: Game
+    Gaming! 🎯🏆
+    + [Win 🏅] -> End
+    :: End
+    Thanks! 👋✨
+  expected:
+    passages: 3
+    valid: true
+
+- name: unicode-mixed
+  description: Mixed scripts
+  input: |
+    :: Start
+    English, 日本語, 中文, 한국어, Русский
+    + [Continue] -> End
+    :: End
+    Done.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-diacritics
+  description: European diacritics
+  input: |
+    :: Start
+    Café, naïve, résumé, über
+    Ñ, ç, ø, å, ä, ö, ü
+    + [Continue] -> End
+    :: End
+    Terminé.
+  expected:
+    passages: 2
+    valid: true
+
+- name: unicode-mathematical
+  description: Mathematical symbols
+  input: |
+    :: Start
+    Math: α β γ δ ε
+    Operators: ∑ ∏ ∫ √ ∞
+    Relations: ≤ ≥ ≠ ≈ ∈
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-currency
+  description: Currency symbols
+  input: |
+    :: Start
+    Prices: $100, €85, £70, ¥12000, ₹8000
+    Crypto: ₿0.01
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-punctuation
+  description: International punctuation
+  input: |
+    :: Start
+    French: « guillemets »
+    German: „Anführungszeichen"
+    Spanish: ¡Hola! ¿Qué tal?
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-symbols
+  description: Various symbols
+  input: |
+    :: Start
+    Arrows: ← → ↑ ↓ ↔
+    Shapes: ■ □ ● ○ ◆
+    Stars: ★ ☆ ✰ ✯
+    Hearts: ♥ ♡ 💕
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-fullwidth
+  description: Fullwidth characters
+  input: |
+    :: Start
+    ＡＢＣ１２３
+    Full width text.
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-combining
+  description: Combining characters
+  input: |
+    :: Start
+    Combining: e + ́ = é
+    Zalgo: H̷e̷l̷l̷o̷
+  expected:
+    passages: 1
+    valid: true
+
+- name: unicode-special-spaces
+  description: Various space characters
+  input: |
+    :: Start
+    Regular space: A B
+    Non-breaking:   A B
+    Em space: A B
+  expected:
+    passages: 1
+    valid: true
