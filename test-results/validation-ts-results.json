@@ -1,7 +1,7 @@
 {
   "platform": "whisker-editor-web",
   "type": "validation",
-  "timestamp": "2026-01-01T04:13:51.136Z",
+  "timestamp": "2026-01-02T03:24:42.846Z",
   "files": [
     {
       "filename": "structural-tests.yaml",
@@ -80,7 +80,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 0,
+          "duration": 1,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -112,7 +112,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 1,
+          "duration": 0,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -164,7 +164,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 0,
+          "duration": 1,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -213,6 +213,7 @@
           "passed": true,
           "expected": {
             "errors": [
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],
@@ -224,6 +225,7 @@
           },
           "actual": {
             "errors": [
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],
@@ -234,7 +236,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 1,
+          "duration": 0,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -245,6 +247,8 @@
           "passed": true,
           "expected": {
             "errors": [
+              "WLS-STR-003",
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],
@@ -258,6 +262,8 @@
           },
           "actual": {
             "errors": [
+              "WLS-STR-003",
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],
@@ -442,7 +448,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 0,
+          "duration": 1,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -544,7 +550,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 1,
+          "duration": 0,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -682,7 +688,7 @@
             "info": []
           },
           "parse_valid": true,
-          "duration": 0,
+          "duration": 1,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -820,7 +826,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 1,
+          "duration": 0,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -880,7 +886,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 0,
+          "duration": 1,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -936,7 +942,7 @@
             ]
           },
           "parse_valid": true,
-          "duration": 1,
+          "duration": 0,
           "errors_match": true,
           "warnings_match": true,
           "info_match": true
@@ -1315,6 +1321,7 @@
             "errors": [
               "WLS-LNK-001",
               "WLS-LNK-005",
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],
@@ -1327,6 +1334,7 @@
             "errors": [
               "WLS-LNK-001",
               "WLS-LNK-005",
+              "WLS-STR-003",
               "WLS-STR-003"
             ],
             "warnings": [],

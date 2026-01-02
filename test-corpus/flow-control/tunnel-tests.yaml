@@ -1,0 +1,380 @@
+# WLS 1.0 Tunnel Tests
+# Category: flow-control/tunnel
+# Count: 20 tests
+#
+# Tunnels are subroutine-like passage calls that return to the caller.
+# Syntax: `-> PassageName ->` calls a tunnel, `<-` returns from it.
+
+tests:
+  # ============================================
+  # BASIC TUNNEL CALLS
+  # ============================================
+
+  - name: tunnel-basic
+    description: Basic tunnel call and return
+    input: |
+      :: Start
+      Before tunnel.
+      -> SubRoutine ->
+      After tunnel.
+
+      :: SubRoutine
+      Inside the subroutine.
+      <-
+    expected:
+      valid: true
+      tunnel_calls: 1
+      tunnel_returns: 1
+    runtime:
+      sequence:
+        - text: "Before tunnel."
+        - call_tunnel: "SubRoutine"
+        - text: "Inside the subroutine."
+        - tunnel_return: true
+        - text: "After tunnel."
+
+  - name: tunnel-with-content-after
+    description: Tunnel with content after return
+    input: |
+      :: Start
+      Introduction.
+      -> Greeting ->
+      Now back in start.
+      + [Continue] -> End
+
+      :: Greeting
+      Hello there!
+      <-
+
+      :: End
+      The end.
+    expected:
+      valid: true
+      tunnel_calls: 1
+
+  - name: tunnel-multiple-calls
+    description: Multiple tunnel calls in sequence
+    input: |
+      :: Morning
+      Wake up.
+      -> BrushTeeth ->
+      -> GetDressed ->
+      -> HaveBreakfast ->
+      Ready for the day.
+
+      :: BrushTeeth
+      Brush brush brush.
+      <-
+
+      :: GetDressed
+      Putting on clothes.
+      <-
+
+      :: HaveBreakfast
+      Eating cereal.
+      <-
+    expected:
+      valid: true
+      tunnel_calls: 3
+      tunnel_returns: 3
+
+  # ============================================
+  # NESTED TUNNELS
+  # ============================================
+
+  - name: tunnel-nested
+    description: Tunnel calling another tunnel
+    input: |
+      :: Start
+      Beginning.
+      -> Level1 ->
+      End.
+
+      :: Level1
+      In level 1.
+      -> Level2 ->
+      Back to level 1.
+      <-
+
+      :: Level2
+      Deep in level 2.
+      <-
+    expected:
+      valid: true
+      tunnel_depth: 2
+    runtime:
+      max_stack_depth: 2
+
+  - name: tunnel-deeply-nested
+    description: Three levels of nested tunnels
+    input: |
+      :: Start
+      -> A ->
+      Done.
+
+      :: A
+      In A.
+      -> B ->
+      Leaving A.
+      <-
+
+      :: B
+      In B.
+      -> C ->
+      Leaving B.
+      <-
+
+      :: C
+      Deepest level.
+      <-
+    expected:
+      valid: true
+      tunnel_depth: 3
+
+  # ============================================
+  # TUNNEL WITH VARIABLES
+  # ============================================
+
+  - name: tunnel-preserves-locals
+    description: Local variables preserved across tunnel
+    input: |
+      @var: _temp = 0
+
+      :: Start
+      {do _temp = 42}
+      -> SubRoutine ->
+      Temp is ${_temp}.
+
+      :: SubRoutine
+      {do _temp = 99}
+      <-
+    expected:
+      valid: true
+    runtime:
+      # Local (_temp) should be restored to 42 after return
+      after_return:
+        _temp: 42
+
+  - name: tunnel-global-vars
+    description: Global variables persist across tunnel
+    input: |
+      @var: count = 0
+
+      :: Start
+      {do count = count + 1}
+      -> Increment ->
+      Count is now $count.
+
+      :: Increment
+      {do count = count + 10}
+      <-
+    expected:
+      valid: true
+    runtime:
+      after_return:
+        count: 11
+
+  # ============================================
+  # TUNNEL EDGE CASES
+  # ============================================
+
+  - name: tunnel-orphan-return
+    description: Return without matching call (error)
+    input: |
+      :: Start
+      Some content.
+      <-
+    expected:
+      valid: true
+    runtime:
+      error: WLS-FLW-011
+      error_message: "Tunnel return without matching call"
+
+  - name: tunnel-missing-return
+    description: Tunnel passage without return
+    input: |
+      :: Start
+      -> NoReturn ->
+      This may never be reached.
+
+      :: NoReturn
+      Content without return.
+      + [Choice] -> Somewhere
+    expected:
+      valid: true
+    validation:
+      warnings:
+        - code: WLS-FLW-010
+          message: "Tunnel passage missing return"
+
+  - name: tunnel-conditional-return
+    description: Conditional tunnel return
+    input: |
+      @var: done = false
+
+      :: Start
+      -> ConditionalTunnel ->
+      Back.
+
+      :: ConditionalTunnel
+      {done}
+        <-
+      {/}
+      Do something.
+      {do done = true}
+      <-
+    expected:
+      valid: true
+
+  - name: tunnel-target-special
+    description: Tunnel cannot call special targets
+    input: |
+      :: Start
+      -> END ->
+    expected:
+      valid: false
+    validation:
+      errors:
+        - code: WLS-FLW-012
+          message: "Cannot tunnel to special target"
+
+  - name: tunnel-empty-passage
+    description: Tunnel to empty passage
+    input: |
+      :: Start
+      -> Empty ->
+      After.
+
+      :: Empty
+      <-
+    expected:
+      valid: true
+
+  # ============================================
+  # TUNNEL WITH CHOICES
+  # ============================================
+
+  - name: tunnel-with-choices
+    description: Tunnel passage with choices
+    input: |
+      :: Start
+      -> ChoiceTunnel ->
+      Returned.
+
+      :: ChoiceTunnel
+      Make a choice:
+      + [A] Choice A selected.
+        <-
+      + [B] Choice B selected.
+        <-
+    expected:
+      valid: true
+
+  - name: tunnel-return-after-choice
+    description: Return triggered by choice
+    input: |
+      :: Start
+      -> Menu ->
+      Menu closed.
+
+      :: Menu
+      Select option:
+      + [Option 1]
+        You selected 1.
+        <-
+      + [Option 2]
+        You selected 2.
+        <-
+    expected:
+      valid: true
+      tunnel_calls: 1
+
+  # ============================================
+  # TUNNEL EXECUTION ORDER
+  # ============================================
+
+  - name: tunnel-inline
+    description: Tunnel inline with surrounding text
+    input: |
+      :: Start
+      One -> Interlude -> two three.
+
+      :: Interlude
+      {interlude}
+      <-
+    expected:
+      valid: true
+    runtime:
+      output: "One {interlude} two three."
+
+  - name: tunnel-multiple-same-target
+    description: Multiple calls to same tunnel
+    input: |
+      @var: call_count = 0
+
+      :: Start
+      -> Counter ->
+      -> Counter ->
+      -> Counter ->
+      Count: $call_count
+
+      :: Counter
+      {do call_count = call_count + 1}
+      <-
+    expected:
+      valid: true
+    runtime:
+      after_all:
+        call_count: 3
+
+  # ============================================
+  # TUNNEL VALIDATION
+  # ============================================
+
+  - name: tunnel-nonexistent-target
+    description: Tunnel to non-existent passage
+    input: |
+      :: Start
+      -> NonExistent ->
+    expected:
+      valid: true
+    validation:
+      errors:
+        - code: WLS-LNK-001
+          targetPassage: NonExistent
+
+  - name: tunnel-recursive
+    description: Recursive tunnel (may cause stack overflow)
+    input: |
+      @var: depth = 0
+
+      :: Start
+      -> Recursive ->
+
+      :: Recursive
+      {do depth = depth + 1}
+      {depth < 5}
+        -> Recursive ->
+      {/}
+      <-
+    expected:
+      valid: true
+    runtime:
+      note: "Recursive tunnels require depth limit"
+
+  - name: tunnel-with-gather
+    description: Tunnel combined with gather points
+    input: |
+      :: Start
+      -> PreChoice ->
+      + [A] A content
+      + [B] B content
+      - Gathered.
+
+      :: PreChoice
+      Before choices.
+      <-
+    expected:
+      valid: true
+      tunnel_calls: 1
+      gathers: 1

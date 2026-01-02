@@ -45,9 +45,9 @@ async function loadModules() {
   } catch (err) {
     // Try alternate path structure
     try {
-      const parserPath = path.resolve(__dirname, '../../../writewhisker/whisker-editor-web/packages/parser/dist/index.js');
-      const validationPath = path.resolve(__dirname, '../../../writewhisker/whisker-editor-web/packages/story-validation/dist/index.js');
-      const modelsPath = path.resolve(__dirname, '../../../writewhisker/whisker-editor-web/packages/story-models/dist/index.js');
+      const parserPath = path.resolve(__dirname, '../../writewhisker/whisker-editor-web/packages/parser/dist/index.js');
+      const validationPath = path.resolve(__dirname, '../../writewhisker/whisker-editor-web/packages/story-validation/dist/index.js');
+      const modelsPath = path.resolve(__dirname, '../../writewhisker/whisker-editor-web/packages/story-models/dist/index.js');
 
       const parserModule = require(parserPath);
       const validationModule = require(validationPath);
