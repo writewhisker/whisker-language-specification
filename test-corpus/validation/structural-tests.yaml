@@ -181,6 +181,9 @@ tests:
       passages: 2
     validation:
       errors:
+        # One error per duplicate passage (2 passages with same name = 2 errors)
+        - code: WLS-STR-003
+          passageName: Start
         - code: WLS-STR-003
           passageName: Start
       info:
@@ -205,6 +208,9 @@ tests:
       passages: 3
     validation:
       errors:
+        # One error per duplicate passage (3 passages with same name = 3 errors)
+        - code: WLS-STR-003
+        - code: WLS-STR-003
         - code: WLS-STR-003
       info:
         - code: WLS-FLW-001

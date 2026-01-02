@@ -1,0 +1,254 @@
+# WLS 1.0 Gather Point Tests
+# Category: flow-control/gather
+# Count: 15 tests
+#
+# Gather points reconverge divergent choice paths using `-` prefix.
+# After choices branch, a gather point collects all paths back together.
+
+tests:
+  # ============================================
+  # BASIC GATHER POINTS
+  # ============================================
+
+  - name: gather-basic
+    description: Basic gather point after choices
+    input: |
+      :: Start
+      Choose one:
+      + [Option A]
+        You chose A.
+      + [Option B]
+        You chose B.
+      - Both paths lead here.
+    expected:
+      valid: true
+      gathers: 1
+    runtime:
+      # After selecting either choice, should continue to gather content
+      after_choice_A:
+        text_contains: "Both paths lead here"
+      after_choice_B:
+        text_contains: "Both paths lead here"
+
+  - name: gather-with-content
+    description: Gather point with inline content
+    input: |
+      :: Start
+      Pick a door:
+      + [Door 1]
+        Behind door 1...
+      + [Door 2]
+        Behind door 2...
+      - You continue down the hallway.
+      More story follows.
+    expected:
+      valid: true
+      gathers: 1
+
+  - name: gather-multiple
+    description: Multiple gather points in sequence
+    input: |
+      :: Start
+      First choice:
+      + [A] Response A
+      + [B] Response B
+      - After first choice.
+      Second choice:
+      + [X] Response X
+      + [Y] Response Y
+      - After second choice.
+    expected:
+      valid: true
+      gathers: 2
+
+  # ============================================
+  # NESTED GATHER POINTS
+  # ============================================
+
+  - name: gather-nested
+    description: Nested gather points with depth
+    input: |
+      :: Start
+      Main choice:
+      + [Outer A]
+        + + [Inner 1]
+          Deep content 1
+        + + [Inner 2]
+          Deep content 2
+        - - Inner gather point
+      + [Outer B]
+        Outer B content
+      - Outer gather point
+    expected:
+      valid: true
+      gathers: 2
+    runtime:
+      # depth-2 gather follows inner choices
+      # depth-1 gather follows outer choices
+
+  - name: gather-three-levels
+    description: Three levels of nested gathers
+    input: |
+      :: Start
+      Level 1:
+      + [L1-A]
+        + + [L2-A]
+          + + + [L3-A] Deep A
+          + + + [L3-B] Deep B
+          - - - Level 3 gather
+        + + [L2-B]
+          L2B content
+        - - Level 2 gather
+      + [L1-B]
+        L1B content
+      - Level 1 gather
+    expected:
+      valid: true
+      gathers: 3
+
+  # ============================================
+  # GATHER WITH CHOICES
+  # ============================================
+
+  - name: gather-then-choice
+    description: Gather followed by new choices
+    input: |
+      :: Start
+      First diverge:
+      + [Path A] Path A content
+      + [Path B] Path B content
+      - Paths converge.
+      Now choose again:
+      + [New option] -> Next
+    expected:
+      valid: true
+      gathers: 1
+      choices_after_gather: 1
+
+  - name: gather-no-exit
+    description: Gather as natural ending point
+    input: |
+      :: Start
+      Choose:
+      + [One] One content
+      + [Two] Two content
+      - The story ends here.
+    expected:
+      valid: true
+      gathers: 1
+    runtime:
+      is_dead_end: true
+
+  # ============================================
+  # GATHER WITH CONDITIONS
+  # ============================================
+
+  - name: gather-conditional-content
+    description: Gather with conditional text
+    input: |
+      @var: visited_cave = false
+
+      :: Start
+      + [Enter cave]{do visited_cave = true}
+        Dark and spooky.
+      + [Stay outside]
+        Nice weather.
+      - {visited_cave}You remember the cave.{/}
+      The day continues.
+    expected:
+      valid: true
+      gathers: 1
+
+  # ============================================
+  # GATHER EDGE CASES
+  # ============================================
+
+  - name: gather-empty-content
+    description: Gather with no content after marker
+    input: |
+      :: Start
+      + [A] Content A
+      + [B] Content B
+      -
+      Next passage content.
+    expected:
+      valid: true
+      gathers: 1
+
+  - name: gather-whitespace
+    description: Gather with whitespace handling
+    input: |
+      :: Start
+      + [Choice]
+        Indented content
+      -   Content after gather with leading spaces
+    expected:
+      valid: true
+      gathers: 1
+
+  - name: gather-at-passage-start
+    description: Gather marker at passage start (invalid)
+    input: |
+      :: Start
+      - This should not be a gather
+    expected:
+      valid: true
+      gathers: 0
+    note: Gather without preceding choices is just text
+
+  - name: gather-after-conditional
+    description: Gather after conditional block (not choice)
+    input: |
+      @var: flag = true
+
+      :: Start
+      {flag}
+      True content.
+      {/}
+      + [Choice] -> Next
+      - Gather here.
+    expected:
+      valid: true
+
+  - name: gather-mixed-depths
+    description: Mixed depth gathers
+    input: |
+      :: Start
+      + [A]
+        + + [A1] A1 content
+        + + [A2] A2 content
+      + [B]
+        B content
+      - Outer gather for all
+    expected:
+      valid: true
+      gathers: 1
+    note: Depth-1 gather collects both outer choices
+
+  - name: gather-sticky-choices
+    description: Gather with sticky choices
+    input: |
+      :: Start
+      * [Look]{do looked = true}
+        You look around.
+      * [Listen]
+        You listen.
+      - Continue exploring.
+    expected:
+      valid: true
+      gathers: 1
+
+  - name: gather-passage-link
+    description: Gather followed by passage link
+    input: |
+      :: Start
+      + [A] A content
+      + [B] B content
+      - All paths lead to the next passage.
+      + [Continue] -> Next
+
+      :: Next
+      You arrived.
+    expected:
+      valid: true
+      gathers: 1
