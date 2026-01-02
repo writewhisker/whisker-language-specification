@@ -1,0 +1,180 @@
+# WLS 2.0 External Function Tests
+# Tests for host application function binding
+
+category: wls-2.0-external
+version: "2.0"
+description: External function binding tests
+
+tests:
+  # Basic external calls
+  - name: external-call
+    description: Basic external function call
+    input: |
+      EXTERNAL greet(name: string): string
+      :: Start
+      ${greet("World")}
+    externals:
+      greet: "(name) => 'Hello, ' + name"
+    expected:
+      output_contains: "Hello, World"
+
+  - name: external-void
+    description: External function with no return
+    input: |
+      EXTERNAL log(message: string)
+      :: Start
+      {do log("Test message")}
+      Logged.
+    externals:
+      log: "(msg) => { console.log(msg) }"
+    expected:
+      output_contains: "Logged"
+
+  - name: external-multiple-params
+    description: External function with multiple parameters
+    input: |
+      EXTERNAL add(a: number, b: number): number
+      :: Start
+      Result: ${add(10, 20)}
+    externals:
+      add: "(a, b) => a + b"
+    expected:
+      output_contains: "Result: 30"
+
+  # Type checking
+  - name: external-type-string
+    description: String parameter type
+    input: |
+      EXTERNAL echo(text: string): string
+      :: Start
+      ${echo("Hello")}
+    externals:
+      echo: "(t) => t"
+    expected:
+      output_contains: "Hello"
+
+  - name: external-type-number
+    description: Number parameter type
+    input: |
+      EXTERNAL double(n: number): number
+      :: Start
+      ${double(21)}
+    externals:
+      double: "(n) => n * 2"
+    expected:
+      output_contains: "42"
+
+  - name: external-type-boolean
+    description: Boolean parameter type
+    input: |
+      EXTERNAL not(b: boolean): boolean
+      :: Start
+      ${not(true)}
+    externals:
+      not: "(b) => !b"
+    expected:
+      output_contains: "false"
+
+  - name: external-type-any
+    description: Any parameter type
+    input: |
+      EXTERNAL stringify(value: any): string
+      :: Start
+      ${stringify(42)}
+    externals:
+      stringify: "(v) => String(v)"
+    expected:
+      output_contains: "42"
+
+  # Optional parameters
+  - name: external-optional-param
+    description: Function with optional parameter
+    input: |
+      EXTERNAL greet(name: string, title?: string): string
+      :: Start
+      ${greet("Alice")}
+      ${greet("Bob", "Sir")}
+    externals:
+      greet: "(name, title) => title ? `Hello, ${title} ${name}` : `Hello, ${name}`"
+    expected:
+      output_contains: "Hello, Alice"
+      output_contains: "Hello, Sir Bob"
+
+  # Error handling
+  - name: external-not-registered
+    description: Error when calling unregistered function
+    input: |
+      EXTERNAL unregistered(): string
+      :: Start
+      ${unregistered()}
+    expected:
+      has_error: true
+      error_contains: "not registered"
+
+  - name: external-type-mismatch
+    description: Error when type doesn't match
+    input: |
+      EXTERNAL expectNumber(n: number): number
+      :: Start
+      ${expectNumber("not a number")}
+    externals:
+      expectNumber: "(n) => n"
+    expected:
+      has_error: true
+
+  # Async functions
+  - name: external-async
+    description: Async external function
+    input: |
+      EXTERNAL fetchData(url: string): string
+      :: Start
+      ${fetchData("/api/data")}
+    externals:
+      fetchData: "async (url) => 'data from ' + url"
+    expected:
+      output_contains: "data from /api/data"
+
+  # Multiple declarations
+  - name: external-multiple-decl
+    description: Multiple external declarations
+    input: |
+      EXTERNAL playSound(id: string)
+      EXTERNAL getUserName(): string
+      EXTERNAL saveScore(score: number)
+      :: Start
+      Welcome, ${getUserName()}!
+    externals:
+      playSound: "(id) => {}"
+      getUserName: "() => 'Player1'"
+      saveScore: "(s) => {}"
+    expected:
+      output_contains: "Welcome, Player1!"
+
+  # Do block usage
+  - name: external-do-block
+    description: External call in do block
+    input: |
+      EXTERNAL playSound(id: string)
+      :: Start
+      {do playSound("click")}
+      Sound played.
+    externals:
+      playSound: "(id) => {}"
+    expected:
+      output_contains: "Sound played"
+
+  - name: external-action-chain
+    description: Multiple external calls in sequence
+    input: |
+      EXTERNAL log(msg: string)
+      EXTERNAL increment(): number
+      VAR count = 0
+      :: Start
+      {do log("Starting")}
+      {do count = increment()}
+      Count: $count
+    externals:
+      log: "(msg) => {}"
+      increment: "() => 1"
+    expected:
+      output_contains: "Count: 1"

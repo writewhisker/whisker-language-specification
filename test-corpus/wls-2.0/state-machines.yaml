@@ -1,0 +1,167 @@
+# WLS 2.0 LIST State Machine Tests
+# Tests for LIST as state machines with add/remove operations
+
+category: wls-2.0-state-machines
+version: "2.0"
+description: LIST state machine operation tests
+
+tests:
+  # Basic state operations
+  - name: list-add-state
+    description: Add state with += operator
+    input: |
+      LIST state = (a), b, c
+      :: Start
+      {do state += b}
+      {state ? b}Has B{/}
+    expected:
+      valid: true
+      output_contains: "Has B"
+
+  - name: list-remove-state
+    description: Remove state with -= operator
+    input: |
+      LIST state = a, (b), c
+      :: Start
+      {do state -= b}
+      {state ? b}Has B{else}No B{/}
+    expected:
+      valid: true
+      output_contains: "No B"
+
+  - name: list-check-state
+    description: Check state with ? operator
+    input: |
+      LIST mood = happy, (sad), angry
+      :: Start
+      {mood ? sad}Feeling sad.{/}
+      {mood ? happy}Feeling happy.{/}
+    expected:
+      valid: true
+      output_contains: "Feeling sad"
+      output_not_contains: "Feeling happy"
+
+  # Multiple active states
+  - name: list-multiple-active
+    description: Multiple states active simultaneously
+    input: |
+      LIST flags = (a), (b), c
+      :: Start
+      {flags ? a}A{/}{flags ? b}B{/}{flags ? c}C{/}
+    expected:
+      valid: true
+      output_contains: "AB"
+      output_not_contains: "C"
+
+  - name: list-add-multiple
+    description: Add multiple states
+    input: |
+      LIST items = sword, shield, potion
+      :: Start
+      {do items += sword}
+      {do items += shield}
+      {items ? sword}Sword{/} {items ? shield}Shield{/}
+    expected:
+      valid: true
+      output_contains: "Sword"
+      output_contains: "Shield"
+
+  # Set operations
+  - name: list-superset
+    description: Check superset with >= operator
+    input: |
+      LIST full = (a), (b), (c)
+      LIST partial = (a), (b)
+      :: Start
+      {full >= partial}Full contains partial{/}
+    expected:
+      valid: true
+      output_contains: "Full contains partial"
+
+  - name: list-subset
+    description: Check subset with <= operator
+    input: |
+      LIST full = (a), (b), (c)
+      LIST partial = (a), (b)
+      :: Start
+      {partial <= full}Partial is subset of full{/}
+    expected:
+      valid: true
+      output_contains: "Partial is subset of full"
+
+  - name: list-equality
+    description: Check equality with == operator
+    input: |
+      LIST a = (x), (y)
+      LIST b = (y), (x)
+      :: Start
+      {a == b}Equal{else}Not equal{/}
+    expected:
+      valid: true
+      output_contains: "Equal"
+
+  # State machine patterns
+  - name: list-door-state
+    description: Door state machine example
+    input: |
+      LIST doorState = (closed), locked, unlocked, open
+      :: Start
+      Door is {doorState ? closed}closed{/}.
+      {do doorState -= closed}
+      {do doorState += open}
+      Door is now {doorState ? open}open{/}.
+    expected:
+      valid: true
+      output_contains: "Door is closed"
+      output_contains: "Door is now open"
+
+  - name: list-toggle-state
+    description: Toggle state on and off
+    input: |
+      LIST light = on, (off)
+      :: Start
+      Light: {light ? off}OFF{else}ON{/}
+      {do light -= off}
+      {do light += on}
+      Light: {light ? on}ON{else}OFF{/}
+    expected:
+      valid: true
+      output_sequence:
+        - "Light: OFF"
+        - "Light: ON"
+
+  # Clear and exclusive
+  - name: list-clear-all
+    description: Clear all states
+    input: |
+      LIST items = (a), (b), (c)
+      :: Start
+      Before: {items ? a}A{/}{items ? b}B{/}{items ? c}C{/}
+      {do items.clear()}
+      After: {items ? a}A{/}{items ? b}B{/}{items ? c}C{/}Empty
+    expected:
+      valid: true
+      output_contains: "Before: ABC"
+      output_contains: "After: Empty"
+
+  - name: list-set-exclusive
+    description: Set one state exclusively
+    input: |
+      LIST mode = (a), (b), (c)
+      :: Start
+      {do mode.setExclusive("b")}
+      Only B: {mode ? a}A{/}{mode ? b}B{/}{mode ? c}C{/}
+    expected:
+      valid: true
+      output_contains: "Only B: B"
+
+  # Serialization
+  - name: list-serialize
+    description: List serializes and restores
+    input: |
+      LIST state = (a), b, (c)
+      :: Start
+      Active: {state.count()} states
+    expected:
+      valid: true
+      output_contains: "Active: 2 states"

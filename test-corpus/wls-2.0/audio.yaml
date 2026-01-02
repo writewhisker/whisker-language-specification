@@ -1,0 +1,195 @@
+# WLS 2.0 Audio API Tests
+# Tests for audio and media controls
+
+category: wls-2.0-audio
+version: "2.0"
+description: Audio/media API tests
+
+tests:
+  # Audio declarations
+  - name: audio-declare-basic
+    description: Basic audio declaration
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      Music plays.
+    expected:
+      valid: true
+
+  - name: audio-declare-loop
+    description: Audio declaration with loop
+    input: |
+      @audio: bgm = "music/theme.mp3" loop
+      :: Start
+      Looping music.
+    expected:
+      valid: true
+
+  - name: audio-declare-volume
+    description: Audio declaration with volume
+    input: |
+      @audio: bgm = "music/theme.mp3" volume:0.7
+      :: Start
+      Quieter music.
+    expected:
+      valid: true
+
+  - name: audio-declare-preload
+    description: Audio declaration with preload
+    input: |
+      @audio: voice = "dialogue/intro.mp3" preload
+      :: Start
+      Voice ready.
+    expected:
+      valid: true
+
+  - name: audio-declare-channel
+    description: Audio declaration with channel
+    input: |
+      @audio: sfx = "sounds/click.wav" channel:sfx
+      :: Start
+      Sound effect.
+    expected:
+      valid: true
+
+  - name: audio-declare-full
+    description: Audio declaration with all options
+    input: |
+      @audio: theme = "music/main.mp3" loop volume:0.8 preload channel:bgm
+      :: Start
+      Full declaration.
+    expected:
+      valid: true
+
+  # Playback control
+  - name: audio-play
+    description: Play audio
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.play("bgm")}
+      Playing.
+    expected:
+      valid: true
+
+  - name: audio-stop
+    description: Stop audio
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.play("bgm")}
+      {do whisker.audio.stop("bgm")}
+      Stopped.
+    expected:
+      valid: true
+
+  - name: audio-pause
+    description: Pause audio
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.play("bgm")}
+      {do whisker.audio.pause("bgm")}
+      Paused.
+    expected:
+      valid: true
+
+  - name: audio-set-volume
+    description: Set audio volume
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.setVolume("bgm", 0.5)}
+      Volume adjusted.
+    expected:
+      valid: true
+
+  # Fade effects
+  - name: audio-fade-in
+    description: Fade in audio
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.fadeIn("bgm", 2000)}
+      Fading in.
+    expected:
+      valid: true
+
+  - name: audio-fade-out
+    description: Fade out audio
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.play("bgm")}
+      {do whisker.audio.fadeOut("bgm", 1000)}
+      Fading out.
+    expected:
+      valid: true
+
+  - name: audio-crossfade
+    description: Crossfade between tracks
+    input: |
+      @audio: forest = "music/forest.mp3"
+      @audio: battle = "music/battle.mp3"
+      :: Start
+      {do whisker.audio.play("forest")}
+      {do whisker.audio.crossfade("forest", "battle", 2000)}
+      Crossfading.
+    expected:
+      valid: true
+
+  # Channel management
+  - name: audio-bgm-exclusive
+    description: BGM channel is exclusive
+    input: |
+      @audio: track1 = "music/a.mp3" channel:bgm
+      @audio: track2 = "music/b.mp3" channel:bgm
+      :: Start
+      {do whisker.audio.play("track1")}
+      {do whisker.audio.play("track2")}
+      Only track2 plays.
+    expected:
+      valid: true
+
+  - name: audio-sfx-simultaneous
+    description: SFX channel allows multiple
+    input: |
+      @audio: sfx1 = "sounds/a.wav" channel:sfx
+      @audio: sfx2 = "sounds/b.wav" channel:sfx
+      :: Start
+      {do whisker.audio.play("sfx1")}
+      {do whisker.audio.play("sfx2")}
+      Both sounds play.
+    expected:
+      valid: true
+
+  # Master volume
+  - name: audio-master-volume
+    description: Set master volume
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.setMasterVolume(0.5)}
+      Master volume set.
+    expected:
+      valid: true
+
+  - name: audio-channel-volume
+    description: Set channel volume
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.setChannelVolume("bgm", 0.5)}
+      Channel volume set.
+    expected:
+      valid: true
+
+  - name: audio-mute-channel
+    description: Mute a channel
+    input: |
+      @audio: bgm = "music/theme.mp3"
+      :: Start
+      {do whisker.audio.muteChannel("bgm")}
+      Channel muted.
+    expected:
+      valid: true

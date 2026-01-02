@@ -1,0 +1,213 @@
+# WLS 2.0 Parameterized Passage Tests
+# Tests for passages that accept parameters
+
+category: wls-2.0-parameterized
+version: "2.0"
+description: Parameterized passage tests
+
+tests:
+  # Basic parameters
+  - name: passage-params-basic
+    description: Basic parameterized passage
+    input: |
+      :: Describe(item)
+      You see a $item.
+
+      :: Start
+      -> Describe("sword") ->
+      -> Describe("shield") ->
+    expected:
+      output_sequence:
+        - "You see a sword."
+        - "You see a shield."
+
+  - name: passage-single-param
+    description: Passage with single parameter
+    input: |
+      :: Greet(name)
+      Hello, $name!
+
+      :: Start
+      -> Greet("Alice") ->
+    expected:
+      output_contains: "Hello, Alice!"
+
+  - name: passage-multiple-params
+    description: Passage with multiple parameters
+    input: |
+      :: ShowItem(name, price, quality)
+      $name costs $price gold ($quality).
+
+      :: Start
+      -> ShowItem("Sword", 100, "excellent") ->
+    expected:
+      output_contains: "Sword costs 100 gold (excellent)"
+
+  # Default values
+  - name: passage-params-default
+    description: Parameter with default value
+    input: |
+      :: Greet(name, title = "friend")
+      Hello, $title $name!
+
+      :: Start
+      -> Greet("Alice") ->
+    expected:
+      output_contains: "Hello, friend Alice!"
+
+  - name: passage-override-default
+    description: Override default value
+    input: |
+      :: Greet(name, title = "friend")
+      Hello, $title $name!
+
+      :: Start
+      -> Greet("Bob", "Sir") ->
+    expected:
+      output_contains: "Hello, Sir Bob!"
+
+  - name: passage-multiple-defaults
+    description: Multiple default values
+    input: |
+      :: Config(a = 1, b = 2, c = 3)
+      Values: $a, $b, $c
+
+      :: Start
+      -> Config() ->
+      -> Config(10) ->
+      -> Config(10, 20) ->
+    expected:
+      output_contains: "Values: 1, 2, 3"
+      output_contains: "Values: 10, 2, 3"
+      output_contains: "Values: 10, 20, 3"
+
+  # Parameter types
+  - name: passage-param-string
+    description: String parameter
+    input: |
+      :: Echo(text)
+      $text
+
+      :: Start
+      -> Echo("Hello, World!") ->
+    expected:
+      output_contains: "Hello, World!"
+
+  - name: passage-param-number
+    description: Number parameter
+    input: |
+      :: Double(n)
+      Result: ${n * 2}
+
+      :: Start
+      -> Double(21) ->
+    expected:
+      output_contains: "Result: 42"
+
+  - name: passage-param-boolean
+    description: Boolean parameter
+    input: |
+      :: Check(flag)
+      {flag}True{else}False{/}
+
+      :: Start
+      -> Check(true) ->
+      -> Check(false) ->
+    expected:
+      output_contains: "True"
+      output_contains: "False"
+
+  # Tunnel calls with parameters
+  - name: passage-tunnel-params
+    description: Tunnel call with parameters
+    input: |
+      :: Describe(item, quality)
+      You examine the $item.
+      {quality == "good"}It's in excellent condition.{/}
+      {quality == "bad"}It's seen better days.{/}
+      <-
+
+      :: Start
+      -> Describe("sword", "good") ->
+      Back in main.
+    expected:
+      output_contains: "You examine the sword"
+      output_contains: "excellent condition"
+      output_contains: "Back in main"
+
+  # Choice links with parameters
+  - name: passage-choice-params
+    description: Choice link with parameters
+    input: |
+      :: Examine(item)
+      You examine the $item closely.
+
+      :: Start
+      What do you examine?
+      + [The sword] -> Examine("sword")
+      + [The shield] -> Examine("shield")
+    expected:
+      valid: true
+      has_choices: true
+
+  # Nested calls
+  - name: passage-nested-calls
+    description: Parameterized passage calls another
+    input: |
+      :: Outer(x)
+      Outer: $x
+      -> Inner($x) ->
+
+      :: Inner(y)
+      Inner: $y
+      <-
+
+      :: Start
+      -> Outer("value") ->
+    expected:
+      output_contains: "Outer: value"
+      output_contains: "Inner: value"
+
+  # Variable scope
+  - name: passage-param-scope
+    description: Parameters don't leak to caller
+    input: |
+      VAR item = "original"
+
+      :: SetItem(item)
+      In passage: $item
+      <-
+
+      :: Start
+      -> SetItem("modified") ->
+      After call: $item
+    expected:
+      output_contains: "In passage: modified"
+      output_contains: "After call: original"
+
+  # Expression arguments
+  - name: passage-expr-args
+    description: Expression as argument
+    input: |
+      VAR x = 10
+
+      :: ShowValue(value)
+      Value: $value
+
+      :: Start
+      -> ShowValue($x + 5) ->
+    expected:
+      output_contains: "Value: 15"
+
+  - name: passage-variable-arg
+    description: Variable as argument
+    input: |
+      VAR name = "Alice"
+
+      :: Greet(person)
+      Hello, $person!
+
+      :: Start
+      -> Greet($name) ->
+    expected:
+      output_contains: "Hello, Alice!"

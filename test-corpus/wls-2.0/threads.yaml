@@ -1,0 +1,186 @@
+# WLS 2.0 Thread Tests
+# Tests for parallel narrative execution with threads
+
+category: wls-2.0-threads
+version: "2.0"
+description: Thread spawning and parallel execution tests
+
+tests:
+  # Basic thread spawning
+  - name: thread-spawn-basic
+    description: Basic thread spawning with == syntax
+    input: |
+      :: Start
+      Main content.
+      -> Background
+      More main content.
+
+      == Background
+      Background content.
+      -> END
+    expected:
+      valid: true
+      threads: 2
+      output_contains:
+        - "Main content"
+        - "Background content"
+
+  - name: thread-passage-declaration
+    description: Thread passage uses == marker
+    input: |
+      == AmbientThread
+      Ambient sounds.
+      -> END
+
+      :: Start
+      -> AmbientThread
+      Main story.
+    expected:
+      valid: true
+      threads: 2
+
+  - name: thread-multiple-spawns
+    description: Multiple threads spawned from main
+    input: |
+      :: Start
+      -> Thread1
+      -> Thread2
+      -> Thread3
+      Main complete.
+
+      == Thread1
+      Thread 1 running.
+
+      == Thread2
+      Thread 2 running.
+
+      == Thread3
+      Thread 3 running.
+    expected:
+      valid: true
+      threads: 4
+
+  # Thread content interleaving
+  - name: thread-interleave
+    description: Thread content interleaved with main
+    input: |
+      :: Start
+      -> Ambient
+      Main.
+
+      == Ambient
+      {~|Sound1|Sound2|}
+    expected:
+      valid: true
+      output_contains: "Main"
+
+  - name: thread-output-merge
+    description: Output from multiple threads merges
+    input: |
+      :: Start
+      -> Left
+      -> Right
+      Center.
+
+      == Left
+      Left content.
+
+      == Right
+      Right content.
+    expected:
+      valid: true
+      output_contains:
+        - "Center"
+        - "Left content"
+        - "Right content"
+
+  # Thread synchronization
+  - name: thread-await-basic
+    description: Await thread completion
+    input: |
+      :: Start
+      -> Background
+      {await Background}
+      After await.
+
+      == Background
+      Background task.
+    expected:
+      valid: true
+      output_sequence:
+        - "Background task"
+        - "After await"
+
+  - name: thread-spawn-explicit
+    description: Explicit spawn expression
+    input: |
+      :: Start
+      {spawn -> Worker}
+      Main continues.
+
+      == Worker
+      Worker task.
+    expected:
+      valid: true
+      threads: 2
+
+  # Thread priorities
+  - name: thread-priority-high
+    description: High priority thread runs first
+    input: |
+      :: Start
+      {spawn -> HighPriority priority:10}
+      {spawn -> LowPriority priority:1}
+
+      == HighPriority
+      High priority task.
+
+      == LowPriority
+      Low priority task.
+    expected:
+      valid: true
+      output_sequence:
+        - "High priority"
+        - "Low priority"
+
+  # Thread lifecycle
+  - name: thread-complete
+    description: Thread completes and is removed
+    input: |
+      :: Start
+      -> ShortTask
+      Main.
+
+      == ShortTask
+      Quick task.
+      -> END
+    expected:
+      valid: true
+
+  - name: thread-error
+    description: Thread error handling
+    input: |
+      :: Start
+      -> Failing
+
+      == Failing
+      {do 1/0}
+    expected:
+      valid: true
+      has_error: true
+
+  # Thread with choices
+  - name: thread-with-choices
+    description: Choices can appear in threads
+    input: |
+      :: Start
+      -> Options
+      Main path.
+
+      == Options
+      Choose:
+      + [A] -> OptionA
+      + [B] -> OptionB
+    expected:
+      valid: true
+      has_choices: true

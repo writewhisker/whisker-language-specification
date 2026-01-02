@@ -1,0 +1,181 @@
+# WLS 2.0 Timed Content Tests
+# Tests for delayed and scheduled content delivery
+
+category: wls-2.0-timed
+version: "2.0"
+description: Timed content and scheduling tests
+
+tests:
+  # Basic delay
+  - name: delay-basic
+    description: Basic @delay directive
+    input: |
+      :: Start
+      Before.
+      @delay 100ms {
+      After delay.
+      }
+    play:
+      - wait: 50
+        output_not_contains: "After delay"
+      - wait: 100
+        output_contains: "After delay"
+
+  - name: delay-seconds
+    description: Delay with seconds unit
+    input: |
+      :: Start
+      Immediate.
+      @delay 1s {
+      Delayed one second.
+      }
+    expected:
+      valid: true
+      output_contains: "Immediate"
+
+  - name: delay-no-unit
+    description: Delay with milliseconds (no unit)
+    input: |
+      :: Start
+      @delay 500 {
+      Half second later.
+      }
+    expected:
+      valid: true
+
+  # Repeating timer
+  - name: every-basic
+    description: Basic @every directive
+    input: |
+      :: Start
+      @every 1s {
+      Tick.
+      }
+    play:
+      - wait: 1000
+        output_contains: "Tick"
+      - wait: 2000
+        output_contains: "Tick"
+
+  - name: every-with-limit
+    description: @every with max fires
+    input: |
+      :: Start
+      @every 100ms max:3 {
+      Count.
+      }
+    play:
+      - wait: 350
+        output_count: 3
+        content: "Count"
+
+  # Timer control
+  - name: timer-cancel
+    description: Cancel a scheduled timer
+    input: |
+      :: Start
+      @delay 1s id:myTimer {
+      Should not appear.
+      }
+      {do whisker.timer.cancel("myTimer")}
+    play:
+      - wait: 1500
+        output_not_contains: "Should not appear"
+
+  - name: timer-pause-resume
+    description: Pause and resume timers
+    input: |
+      :: Start
+      @delay 500ms {
+      Delayed content.
+      }
+      {do whisker.timer.pause()}
+    play:
+      - wait: 600
+        output_not_contains: "Delayed content"
+
+  # Multiple timers
+  - name: timer-multiple
+    description: Multiple independent timers
+    input: |
+      :: Start
+      @delay 100ms {First.}
+      @delay 200ms {Second.}
+      @delay 300ms {Third.}
+    play:
+      - wait: 150
+        output_contains: "First"
+        output_not_contains: "Second"
+      - wait: 250
+        output_contains: "Second"
+      - wait: 350
+        output_contains: "Third"
+
+  - name: timer-ordering
+    description: Timers fire in correct order
+    input: |
+      :: Start
+      @delay 300ms {Third.}
+      @delay 100ms {First.}
+      @delay 200ms {Second.}
+    expected:
+      output_sequence:
+        - "First"
+        - "Second"
+        - "Third"
+
+  # Timer with callbacks
+  - name: timer-callback
+    description: Timer with onFire callback
+    input: |
+      :: Start
+      VAR count = 0
+      @every 100ms onFire:{do count += 1} {
+      Count: $count
+      }
+    play:
+      - wait: 350
+        output_contains: "Count: 3"
+
+  # Time string parsing
+  - name: timer-parse-ms
+    description: Parse milliseconds
+    input: |
+      :: Start
+      @delay 500ms {Done.}
+    expected:
+      valid: true
+
+  - name: timer-parse-seconds
+    description: Parse seconds
+    input: |
+      :: Start
+      @delay 2s {Done.}
+    expected:
+      valid: true
+
+  - name: timer-parse-minutes
+    description: Parse minutes
+    input: |
+      :: Start
+      @delay 1m {Done.}
+    expected:
+      valid: true
+
+  - name: timer-parse-hours
+    description: Parse hours
+    input: |
+      :: Start
+      @delay 1h {Done.}
+    expected:
+      valid: true
+
+  # Timer remaining time
+  - name: timer-remaining
+    description: Get remaining time for timer
+    input: |
+      :: Start
+      @delay 1s id:countdown {Done.}
+      Time left: ${whisker.timer.remaining("countdown")}
+    expected:
+      valid: true
