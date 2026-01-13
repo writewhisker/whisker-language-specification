@@ -1,4 +1,4 @@
-// WLS 1.0 Example: Variables
+// WLS Example: Variables
 // Demonstrates variable declaration, types, and interpolation
 
 @title: Variables Demo

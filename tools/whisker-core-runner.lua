@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
--- WLS 1.0 Test Corpus Runner for whisker-core
+-- WLS Test Corpus Runner for whisker-core
 -- Runs test corpus against the whisker-core WLS parser
 --
 -- Usage: lua whisker-core-runner.lua [corpus_path] [output_file]
@@ -154,7 +154,7 @@ end
 
 -- Main runner
 local function main()
-    print("WLS 1.0 Test Corpus Runner for whisker-core")
+    print("WLS Test Corpus Runner for whisker-core")
     print("Loading test corpus from: " .. CORPUS_PATH)
     print("")
 
@@ -210,7 +210,7 @@ local function main()
     print(string.format("  %d/%d passed (%s)", total_passed, total_tests, results.summary.passRate))
     print("")
     print("============================================================")
-    print("WLS 1.0 Test Corpus Results - whisker-core")
+    print("WLS Test Corpus Results - whisker-core")
     print("============================================================")
     print(string.format("  Total: %d", total_tests))
     print(string.format("  Passed: %d", total_passed))

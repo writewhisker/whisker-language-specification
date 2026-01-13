@@ -1,5 +1,5 @@
 /**
- * WLS 1.0 Cross-Platform Test Runner
+ * WLS Cross-Platform Test Runner
  *
  * Runs the WLS test corpus against multiple implementations:
  * - whisker-editor-web (TypeScript/Node)
@@ -384,7 +384,7 @@ export class CrossPlatformRunner {
    */
   printSummary(report: CrossPlatformReport): void {
     console.log('\n' + '='.repeat(60));
-    console.log('WLS 1.0 Test Corpus Results');
+    console.log('WLS Test Corpus Results');
     console.log('='.repeat(60));
 
     for (const platform of report.platforms) {

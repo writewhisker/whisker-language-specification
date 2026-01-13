@@ -1,6 +1,6 @@
 # IDE Integration Guide
 
-This guide explains how to set up IDE integration for WLS 1.0 development.
+This guide explains how to set up IDE integration for WLS development.
 
 ## VSCode Extension
 
@@ -14,7 +14,7 @@ The Whisker VSCode extension provides full IDE support:
 
 ### Features
 
-- **Syntax Highlighting**: Full WLS 1.0 syntax highlighting
+- **Syntax Highlighting**: Full WLS syntax highlighting
 - **IntelliSense**: Autocomplete for passages, variables, functions
 - **Diagnostics**: Real-time error and warning display
 - **Go to Definition**: Ctrl+Click on passage names

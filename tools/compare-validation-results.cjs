@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WLS 1.0 Cross-Platform Validation Comparison
+ * WLS Cross-Platform Validation Comparison
  * Compares TypeScript and Lua validation results for parity
  */
 
@@ -37,7 +37,7 @@ function arraysEqual(a, b) {
 }
 
 function main() {
-  console.log('WLS 1.0 Cross-Platform Validation Comparison');
+  console.log('WLS Cross-Platform Validation Comparison');
   console.log('=============================================\n');
 
   const tsResults = loadResults(TS_RESULTS);

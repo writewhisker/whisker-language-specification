@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WLS 1.0 Test Corpus Runner for whisker-editor-web
+ * WLS Test Corpus Runner for whisker-editor-web
  * Runs test corpus against the whisker-editor-web parser
  *
  * Usage: node whisker-editor-runner.cjs [corpus_path] [output_file]
@@ -148,7 +148,7 @@ function runCategory(category) {
 
 // Main
 async function main() {
-    console.log('WLS 1.0 Test Corpus Runner - whisker-editor-web');
+    console.log('WLS Test Corpus Runner - whisker-editor-web');
     console.log('================================================');
     console.log(`Corpus path: ${CORPUS_PATH}`);
     console.log(`Output file: ${OUTPUT_FILE}`);

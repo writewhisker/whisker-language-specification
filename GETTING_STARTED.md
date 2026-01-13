@@ -1,6 +1,6 @@
-# Getting Started: Executing the WLS 1.0 Process
+# Getting Started: Executing the WLS Process
 
-This guide explains how to execute the Whisker Language Specification 1.0 implementation using Claude.
+This guide explains how to execute the Whisker Language Specification implementation using Claude.
 
 ## Overview
 
@@ -76,7 +76,7 @@ Copy Claude's response and save it:
 ### Execute Phase 0 (Research)
 
 ```
-I'm starting the WLS 1.0 project, Phase 0: Research & Design.
+I'm starting the WLS project, Phase 0: Research & Design.
 
 Please read:
 - whisker-language-specification-1.0/CLAUDE.md
@@ -90,7 +90,7 @@ Write output to phase-0-research/outputs/TWINE_ANALYSIS.md
 ### Continue a Session
 
 ```
-Resuming WLS 1.0 Phase 0.
+Resuming WLS Phase 0.
 Last completed: Task 0.1 (Twine Analysis)
 Next task: 0.2 (Ink Analysis)
 
@@ -157,13 +157,13 @@ Session 7:
 [ ] 1.6 Choices → spec/06-CHOICES.md
 [ ] 1.7 Lua API → spec/07-LUA_API.md
 [ ] 1.8 File Formats → spec/08-FILE_FORMATS.md
-[ ] 1.9 EBNF Grammar → spec/GRAMMAR.ebnf
-[ ] 1.10 JSON Schema → shared/schemas/wls-1.0.schema.json
+[ ] 1.9 EBNF Grammar → GRAMMAR.ebnf
+[ ] 1.10 JSON Schema → shared/schemas/wls.schema.json
 [ ] 1.11 Examples → spec/09-EXAMPLES.md
 [ ] 1.12 Best Practices → spec/10-BEST_PRACTICES.md
-[ ] 1.13 Test Corpus → phase-4-validation/test-corpus/
+[ ] 1.13 Test Corpus → test-corpus/
 [ ] 1.14 Appendices → spec/APPENDICES.md
-[ ] 1.15 Compile Spec → spec/WLS-1.0-COMPLETE.md
+[ ] 1.15 Compile Spec → spec/WLS-COMPLETE.md
 ```
 
 ### Phase 2 & 3: Implementation (parallel, ~7 weeks)
@@ -184,7 +184,7 @@ Here's what a complete session looks like:
 
 **You say:**
 ```
-I'm working on WLS 1.0 Phase 0, Task 0.1.
+I'm working on WLS Phase 0, Task 0.1.
 
 Please:
 1. Read phase-0-research/prompts/01-twine-analysis.md
@@ -251,7 +251,7 @@ Before starting Phase 1, please:
 To begin immediately, say:
 
 ```
-Let's start the WLS 1.0 project.
+Let's start the WLS project.
 
 Please:
 1. Read whisker-language-specification-1.0/phase-0-research/CLAUDE.md

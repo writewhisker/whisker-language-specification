@@ -1,8 +1,8 @@
 @title: Rich Text Demo
-@author: WLS 1.0
+@author: WLS
 @version: 1.0.0
 
--- WLS 1.0 Gap 5: Rich Text Formatting Demo
+-- WLS Gap 5: Rich Text Formatting Demo
 -- This story demonstrates markdown-style formatting
 
 :: Start

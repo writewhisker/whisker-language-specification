@@ -1,0 +1,281 @@
+# Nesting Limits Test Corpus
+# Tests for deep nesting scenarios and limits
+
+name: Nesting Limits
+description: Tests for deeply nested structures and edge cases
+
+tests:
+  # Choice nesting
+  - id: nested_choices_5_levels
+    description: Choices nested 5 levels deep
+    input: |
+      :: Start
+      * [Level 1]
+        * [Level 2]
+          * [Level 3]
+            * [Level 4]
+              * [Level 5] -> deep
+    expected:
+      valid: true
+      passages: 1
+      max_choice_depth: 5
+
+  - id: nested_choices_10_levels
+    description: Choices nested 10 levels deep
+    input: |
+      :: Start
+      * [L1]
+        * [L2]
+          * [L3]
+            * [L4]
+              * [L5]
+                * [L6]
+                  * [L7]
+                    * [L8]
+                      * [L9]
+                        * [L10] -> deep
+    expected:
+      valid: true
+      passages: 1
+      max_choice_depth: 10
+
+  # Conditional nesting
+  - id: nested_conditionals_5_levels
+    description: Conditionals nested 5 levels deep
+    input: |
+      :: Start
+      {if $a > 0}
+        {if $b > 0}
+          {if $c > 0}
+            {if $d > 0}
+              {if $e > 0}
+                All positive
+              {/}
+            {/}
+          {/}
+        {/}
+      {/}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: nested_conditionals_with_else
+    description: Deeply nested conditionals with else branches
+    input: |
+      :: Start
+      {if $x > 0}
+        Positive
+        {if $x > 10}
+          Large
+          {if $x > 100}
+            Very large
+          {else}
+            Medium large
+          {/}
+        {else}
+          Small positive
+        {/}
+      {else}
+        Non-positive
+        {if $x < 0}
+          Negative
+        {else}
+          Zero
+        {/}
+      {/}
+    expected:
+      valid: true
+      passages: 1
+
+  # Expression nesting
+  - id: nested_parentheses
+    description: Deeply nested parentheses in expressions
+    input: |
+      :: Start
+      Result: {((($a + $b) * ($c - $d)) / (($e + $f) * $g))}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: nested_function_calls
+    description: Nested function calls
+    input: |
+      :: Start
+      {max(min(abs($x), abs($y)), min(abs($z), abs($w)))}
+    expected:
+      valid: true
+      passages: 1
+
+  # Alternative nesting
+  - id: nested_alternatives
+    description: Nested alternative sequences
+    input: |
+      :: Start
+      {~outer {&inner1|inner2}|{!once1|once2}|plain}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: alternatives_with_conditionals
+    description: Alternatives containing conditionals
+    input: |
+      :: Start
+      {~{if $x > 0:positive|negative}|neutral|unknown}
+    expected:
+      valid: true
+      passages: 1
+
+  # Tunnel and divert nesting
+  - id: tunnel_chain
+    description: Chain of tunnel calls
+    input: |
+      :: Start
+      -> TunnelA ->
+      Back at start
+
+      :: TunnelA
+      In A
+      -> TunnelB ->
+      Back in A
+
+      :: TunnelB
+      In B
+      -> TunnelC ->
+      Back in B
+
+      :: TunnelC
+      In C
+    expected:
+      valid: true
+      passages: 4
+
+  # Namespace nesting
+  - id: nested_namespaces
+    description: Deeply nested namespaces
+    input: |
+      NAMESPACE Outer
+        NAMESPACE Middle
+          NAMESPACE Inner
+            :: DeepPassage
+            Very deep
+          END NAMESPACE
+        END NAMESPACE
+      END NAMESPACE
+
+      :: Start
+      -> Outer.Middle.Inner.DeepPassage
+    expected:
+      valid: true
+      namespaces: 3
+
+  # Function with complex body
+  - id: function_with_nested_logic
+    description: Function containing nested conditionals and loops
+    input: |
+      FUNCTION complexLogic(x, y, z)
+        {if x > 0}
+          {if y > 0}
+            {if z > 0}
+              All positive
+            {else}
+              Z negative
+            {/}
+          {else}
+            Y negative
+          {/}
+        {else}
+          X negative
+        {/}
+      END FUNCTION
+
+      :: Start
+      {complexLogic(1, 2, 3)}
+    expected:
+      valid: true
+      functions: 1
+
+  # Collections with nested data
+  - id: map_with_nested_values
+    description: Map with complex nested expressions
+    input: |
+      MAP data = {
+        "nested": $a + $b,
+        "computed": max($x, $y)
+      }
+
+      :: Start
+      Value: $data.nested
+    expected:
+      valid: true
+      maps: 1
+
+  # Wide nesting (many siblings)
+  - id: many_sibling_choices
+    description: Many choices at same level
+    input: |
+      :: Start
+      * [Option 1] -> o1
+      * [Option 2] -> o2
+      * [Option 3] -> o3
+      * [Option 4] -> o4
+      * [Option 5] -> o5
+      * [Option 6] -> o6
+      * [Option 7] -> o7
+      * [Option 8] -> o8
+      * [Option 9] -> o9
+      * [Option 10] -> o10
+    expected:
+      valid: true
+      passages: 1
+      choices: 10
+
+  - id: many_alternatives
+    description: Many alternatives in sequence
+    input: |
+      :: Start
+      {~a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t}
+    expected:
+      valid: true
+      passages: 1
+
+  # Mixed deep nesting
+  - id: mixed_deep_nesting
+    description: Combination of all nesting types
+    input: |
+      :: Start
+      * [Choice 1]
+        {if $x > 0}
+          {~one|two|three}
+          Result: {(($a + $b) * $c)}
+          * [Nested choice] -> deep
+        {/}
+      * [Choice 2] -> other
+    expected:
+      valid: true
+      passages: 1
+
+  # Edge case: empty nested structures
+  - id: empty_nested_conditionals
+    description: Nested conditionals with empty branches
+    input: |
+      :: Start
+      {if $x}
+        {if $y}
+        {/}
+      {/}
+      Content after
+    expected:
+      valid: true
+      passages: 1
+
+  - id: empty_nested_choices
+    description: Choices with empty content
+    input: |
+      :: Start
+      * [Option 1]
+      * [Option 2]
+        * [Nested empty]
+      * [Option 3] -> target
+    expected:
+      valid: true
+      passages: 1

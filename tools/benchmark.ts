@@ -1,5 +1,5 @@
 /**
- * WLS 1.0 Performance Benchmarks
+ * WLS Performance Benchmarks
  *
  * Measures parse time and memory usage for whisker-editor-web parser
  */
@@ -169,7 +169,7 @@ function formatBytes(bytes: number): string {
 }
 
 async function main(): Promise<void> {
-  console.log('WLS 1.0 Performance Benchmarks');
+  console.log('WLS Performance Benchmarks');
   console.log('='.repeat(60));
   console.log();
 

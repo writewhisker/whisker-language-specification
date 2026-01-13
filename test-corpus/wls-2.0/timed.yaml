@@ -1,0 +1,189 @@
+# WLS Timed Content Tests (Advanced Feature)
+# Tests for @delay, @every, and time-based content
+
+- name: delay-basic
+  description: Basic delay directive
+  input: |
+    :: Start
+    Before.
+    @delay 100ms {
+    After delay.
+    }
+  play:
+    - wait: 50
+      output_not_contains: "After delay"
+    - wait: 100
+      output_contains: "After delay"
+
+- name: delay-seconds
+  description: Delay with seconds unit
+  input: |
+    :: Start
+    Starting.
+    @delay 1s {
+    One second later.
+    }
+  play:
+    - wait: 500
+      output_not_contains: "One second later"
+    - wait: 1000
+      output_contains: "One second later"
+
+- name: delay-nested
+  description: Nested delays
+  input: |
+    :: Start
+    First.
+    @delay 100ms {
+    Second.
+    @delay 100ms {
+    Third.
+    }
+    }
+  play:
+    - wait: 50
+      output_sequence: ["First"]
+    - wait: 100
+      output_sequence: ["First", "Second"]
+    - wait: 200
+      output_sequence: ["First", "Second", "Third"]
+
+- name: delay-with-variable
+  description: Delay duration from variable
+  input: |
+    :: Start
+    @set wait_time = 500
+    Starting.
+    @delay ${wait_time}ms {
+    After wait.
+    }
+  play:
+    - wait: 250
+      output_not_contains: "After wait"
+    - wait: 500
+      output_contains: "After wait"
+
+- name: every-basic
+  description: Repeating content with @every
+  input: |
+    :: Start
+    Clock starts.
+    @every 100ms {
+    Tick.
+    }
+  play:
+    - wait: 250
+      output_count: { "Tick": 2 }
+
+- name: every-with-limit
+  description: Limited repetitions with count option
+  input: |
+    :: Start
+    @every 100ms count: 3 {
+    Beep.
+    }
+  play:
+    - wait: 400
+      output_count: { "Beep": 3 }
+
+- name: every-cancel
+  description: Cancel repeating timer
+  input: |
+    :: Start
+    @every 100ms id: heartbeat {
+    Thump.
+    }
+    @delay 250ms {
+    @cancel heartbeat
+    Stopped.
+    }
+  play:
+    - wait: 150
+      output_contains: "Thump"
+    - wait: 350
+      output_contains: "Stopped"
+
+- name: delay-pause-resume
+  description: Pausing and resuming timers
+  input: |
+    :: Start
+    @delay 200ms id: reveal {
+    Secret revealed!
+    }
+    @delay 100ms {
+    @pause reveal
+    }
+    @delay 300ms {
+    @resume reveal
+    }
+  play:
+    - wait: 500
+      output_contains: "Secret revealed!"
+
+- name: delay-in-thread
+  description: Delay within spawned thread
+  input: |
+    :: Start
+    Main start.
+    -> Delayed
+
+    == Delayed
+    @delay 100ms {
+    Thread delayed content.
+    }
+    -> END
+  play:
+    - wait: 150
+      output_contains: "Thread delayed content"
+
+- name: every-with-alternation
+  description: Repeating alternating content
+  input: |
+    :: Start
+    @every 100ms count: 4 {
+    {~|A|B|}
+    }
+  play:
+    - wait: 450
+      output_contains: ["A", "B"]
+
+- name: delay-choice-timeout
+  description: Timeout on choice
+  input: |
+    :: Start
+    Choose quickly!
+    @delay 500ms {
+    Too slow!
+    -> TimeUp
+    }
+    + [Act fast] -> Success
+
+    :: Success
+    You made it!
+
+    :: TimeUp
+    Time ran out.
+  expected:
+    valid: true
+
+- name: delay-zero
+  description: Zero delay executes immediately
+  input: |
+    :: Start
+    Before.
+    @delay 0ms {
+    After.
+    }
+  expected:
+    output_sequence: ["Before", "After"]
+
+- name: every-single
+  description: Every with count:1 is like delay
+  input: |
+    :: Start
+    @every 100ms count: 1 {
+    Once.
+    }
+  play:
+    - wait: 150
+      output_count: { "Once": 1 }

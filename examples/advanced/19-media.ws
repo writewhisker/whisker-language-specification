@@ -1,15 +1,15 @@
 @title: Media Embedding Demo
-@author: WLS 1.0
+@author: WLS
 @version: 1.0.0
 
--- WLS 1.0 Gap 5: Media Embedding Demo
+-- WLS Gap 5: Media Embedding Demo
 -- This story demonstrates image, audio, and video embedding
 
 :: Start
 
 # Media in Interactive Fiction
 
-WLS 1.0 supports rich media embedding to enhance your stories.
+WLS supports rich media embedding to enhance your stories.
 
 ## Images
 

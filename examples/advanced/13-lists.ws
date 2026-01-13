@@ -1,4 +1,4 @@
-// WLS 1.0 LIST Example
+// WLS LIST Example
 // Demonstrates LIST declarations and operations
 // LISTs are enumerated sets where values can be active or inactive
 

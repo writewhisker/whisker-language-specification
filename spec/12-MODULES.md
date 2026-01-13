@@ -6,7 +6,7 @@
 
 ## 12.1 Overview
 
-Modules provide code organization and reuse mechanisms for large Whisker projects. WLS 1.0 supports three modularity features:
+Modules provide code organization and reuse mechanisms for large Whisker projects. WLS supports three modularity features:
 
 | Feature | Purpose | Syntax |
 |---------|---------|--------|

@@ -1,4 +1,4 @@
-# WLS 1.0 Validation Test Corpus
+# WLS Validation Test Corpus
 
 This directory contains tests for semantic validation of WLS stories. These tests verify that both TypeScript (whisker-editor-web) and Lua (whisker-core) validators produce consistent results.
 
@@ -64,7 +64,7 @@ pnpm --filter @writewhisker/story-validation test
 
 ### Lua (whisker-core)
 ```bash
-lua phase-4-validation/tools/validation-runner.lua
+lua tools/validation-corpus-runner.lua
 ```
 
 ## Test Count

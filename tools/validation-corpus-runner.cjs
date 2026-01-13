@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WLS 1.0 Validation Corpus Runner for whisker-editor-web
+ * WLS Validation Corpus Runner for whisker-editor-web
  * Runs validation test corpus against TypeScript validators
  *
  * Usage: node validation-corpus-runner.cjs [corpus_path] [output_file]
@@ -379,7 +379,7 @@ function runTest(test) {
 
 // Main runner
 async function main() {
-  console.log('WLS 1.0 Validation Corpus Runner for whisker-editor-web');
+  console.log('WLS Validation Corpus Runner for whisker-editor-web');
   console.log('========================================================');
 
   if (!await loadModules()) {

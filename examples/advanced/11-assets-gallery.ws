@@ -1,4 +1,4 @@
-// WLS 1.0 Assets Example
+// WLS Assets Example
 // Converted from v2-with-assets.whisker (JSON Format 2.0)
 // Demonstrates asset management with images, audio, and video
 

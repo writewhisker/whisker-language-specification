@@ -1,4 +1,4 @@
-// WLS 1.0 The Enchanted Library
+// WLS The Enchanted Library
 // Converted from v2-story-features.whisker (JSON Format 2.0)
 // Demonstrates story-level tags, settings, and variable usage tracking
 

@@ -9,7 +9,7 @@
 
 ## 1.1 Purpose
 
-This document specifies the Whisker Language Specification (WLS) version 1.0, a language for authoring interactive fiction and choice-based narratives. WLS 1.0 defines the syntax, semantics, and runtime behavior that compliant implementations MUST follow.
+This document specifies the Whisker Language Specification (WLS) version 1.0, a language for authoring interactive fiction and choice-based narratives. WLS defines the syntax, semantics, and runtime behavior that compliant implementations MUST follow.
 
 The specification serves three audiences:
 
@@ -19,7 +19,7 @@ The specification serves three audiences:
 
 ## 1.2 Scope
 
-WLS 1.0 specifies:
+WLS specifies:
 
 - **Syntax**: The textual representation of Whisker stories
 - **Semantics**: The meaning and behavior of language constructs
@@ -27,7 +27,7 @@ WLS 1.0 specifies:
 - **Formats**: Both text (`.ws`) and JSON representations
 - **Compatibility**: Requirements for bi-directional platform compatibility
 
-WLS 1.0 does NOT specify:
+WLS does NOT specify:
 
 - Presentation or rendering (implementation-specific)
 - User interface design
@@ -36,7 +36,7 @@ WLS 1.0 does NOT specify:
 
 ## 1.3 Design Philosophy
 
-WLS 1.0 follows these core principles:
+WLS follows these core principles:
 
 ### 1.3.1 Prose First
 
@@ -89,7 +89,7 @@ Language constructs follow predictable patterns:
 
 ### 1.3.4 Portability
 
-Stories written for WLS 1.0 MUST produce identical behavior across all compliant implementations.
+Stories written for WLS MUST produce identical behavior across all compliant implementations.
 
 ## 1.4 Notation Conventions
 
@@ -150,7 +150,7 @@ Invalid syntax or error conditions are shown as:
 
 ## 1.5 Document Structure
 
-The WLS 1.0 specification is organized as follows:
+The WLS specification is organized as follows:
 
 | Chapter | Title | Content |
 |---------|-------|---------|
@@ -184,17 +184,17 @@ The WLS 1.0 specification is organized as follows:
 
 ### 1.7.1 Implementation Conformance
 
-An implementation is **WLS 1.0 conformant** if it:
+An implementation is **WLS conformant** if it:
 
-1. Correctly parses all valid WLS 1.0 syntax
-2. Correctly rejects all invalid WLS 1.0 syntax with appropriate errors
+1. Correctly parses all valid WLS syntax
+2. Correctly rejects all invalid WLS syntax with appropriate errors
 3. Implements all MUST requirements in this specification
 4. Implements the complete `whisker.*` API
-5. Produces identical output for the WLS 1.0 test corpus
+5. Produces identical output for the WLS test corpus
 
 ### 1.7.2 Story Conformance
 
-A story is **WLS 1.0 conformant** if it:
+A story is **WLS conformant** if it:
 
 1. Uses only syntax defined in this specification
 2. Uses only API functions defined in this specification
@@ -208,7 +208,7 @@ A story is **WLS 1.0 conformant** if it:
 
 ### 1.8.1 Compatibility Notes
 
-WLS 1.0 introduces breaking changes from previous Whisker implementations:
+WLS introduces breaking changes from previous Whisker implementations:
 
 | Change | Migration |
 |--------|-----------|
@@ -223,18 +223,18 @@ A migration tool is provided to automate these changes.
 
 ## 1.9 Reference Implementations
 
-Two reference implementations exist for WLS 1.0:
+Two reference implementations exist for WLS:
 
 | Implementation | Language | Platform |
 |----------------|----------|----------|
 | whisker-core | Lua | CLI, Desktop, Embedded |
 | whisker-editor-web | TypeScript | Web browsers |
 
-Both implementations MUST produce identical behavior for all WLS 1.0 stories.
+Both implementations MUST produce identical behavior for all WLS stories.
 
 ## 1.10 Acknowledgments
 
-WLS 1.0 draws inspiration from:
+WLS draws inspiration from:
 
 - **Twine** (Harlowe, SugarCube, Chapbook story formats)
 - **Ink** (inkle's narrative scripting language)

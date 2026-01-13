@@ -8,7 +8,7 @@
 
 Choices are the primary mechanism for player interaction in Whisker stories. A choice presents the player with options, each leading to a different passage or outcome.
 
-WLS 1.0 provides:
+WLS provides:
 
 | Feature | Description |
 |---------|-------------|

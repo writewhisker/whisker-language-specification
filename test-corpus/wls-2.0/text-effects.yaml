@@ -1,0 +1,209 @@
+# WLS Text Effects Tests (Advanced Feature)
+# Tests for text effects and transitions
+
+category: wls-text-effects
+description: Text effects and transitions tests
+
+tests:
+  # Transitions
+  - name: transition-fade-in
+    description: Fade in transition
+    input: |
+      :: Start
+      @transition: fade-in 1s
+      The scene changes...
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "fade-in"
+
+  - name: transition-slide-left
+    description: Slide left transition
+    input: |
+      :: Start
+      @transition: slide-left 0.5s
+      A new location appears.
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "slide-left"
+
+  - name: transition-slide-right
+    description: Slide right transition
+    input: |
+      :: Start
+      @transition: slide-right 500ms
+      Sliding right.
+    expected:
+      valid: true
+
+  - name: transition-slide-up
+    description: Slide up transition
+    input: |
+      :: Start
+      @transition: slide-up 0.5s
+      Rising up.
+    expected:
+      valid: true
+
+  - name: transition-slide-down
+    description: Slide down transition
+    input: |
+      :: Start
+      @transition: slide-down 0.5s
+      Dropping down.
+    expected:
+      valid: true
+
+  # Text effects
+  - name: effect-typewriter
+    description: Typewriter effect
+    input: |
+      :: Start
+      @effect: typewriter 50ms {
+      The message appears letter by letter.
+      }
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "typewriter"
+
+  - name: effect-shake
+    description: Shake effect
+    input: |
+      :: Start
+      @effect: shake 500ms {
+      BOOM!
+      }
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "shake"
+
+  - name: effect-pulse
+    description: Pulse effect
+    input: |
+      :: Start
+      @effect: pulse {
+      Important text
+      }
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "pulse"
+
+  - name: effect-glitch
+    description: Glitch effect
+    input: |
+      :: Start
+      @effect: glitch {
+      Corrupted
+      }
+    expected:
+      valid: true
+      has_effect: true
+      effect_name: "glitch"
+
+  - name: effect-fade-in
+    description: Fade in effect
+    input: |
+      :: Start
+      @effect: fade-in 1s {
+      Appearing gradually.
+      }
+    expected:
+      valid: true
+
+  - name: effect-fade-out
+    description: Fade out effect
+    input: |
+      :: Start
+      @effect: fade-out 1s {
+      Disappearing.
+      }
+    expected:
+      valid: true
+
+  # Effect options
+  - name: effect-with-speed
+    description: Effect with speed option
+    input: |
+      :: Start
+      @effect: typewriter speed:100 {
+      Slower typing.
+      }
+    expected:
+      valid: true
+
+  - name: effect-with-delay
+    description: Effect with delay option
+    input: |
+      :: Start
+      @effect: fade-in delay:500 {
+      Delayed fade.
+      }
+    expected:
+      valid: true
+
+  - name: effect-with-easing
+    description: Effect with easing option
+    input: |
+      :: Start
+      @effect: slide-left easing:ease-in-out {
+      Smooth sliding.
+      }
+    expected:
+      valid: true
+
+  # Custom styles
+  - name: style-custom
+    description: Custom style block
+    input: |
+      @style: my-effect {
+        animation: custom-animation 1s;
+      }
+      :: Start
+      .my-effect {
+      Custom styled text.
+      }
+    expected:
+      valid: true
+
+  # Multiple effects
+  - name: effect-sequence
+    description: Multiple effects in sequence
+    input: |
+      :: Start
+      @effect: typewriter 50ms {
+      First appears...
+      }
+      @effect: fade-in 1s {
+      Then this fades in.
+      }
+    expected:
+      valid: true
+
+  # Effect on choices
+  - name: effect-on-choices
+    description: Effect applied to choices
+    input: |
+      :: Start
+      @effect: fade-in {
+      + [Option A] -> A
+      + [Option B] -> B
+      }
+    expected:
+      valid: true
+      has_choices: true
+
+  # Progressive reveal
+  - name: effect-progressive
+    description: Progressive text reveal
+    input: |
+      :: Start
+      @effect: typewriter 30ms {
+      Each character appears one by one, creating tension...
+      }
+    expected:
+      valid: true
+      effect_is_progressive: true

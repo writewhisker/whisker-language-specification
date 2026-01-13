@@ -1,0 +1,177 @@
+# WLS Text Effects Tests (Advanced Feature)
+# Tests for @effect directive and text animations
+
+- name: effect-typewriter-basic
+  description: Basic typewriter effect
+  input: |
+    :: Start
+    @effect typewriter {
+    Hello, World!
+    }
+  play:
+    - wait: 100
+      output_length_max: 5
+    - wait: 500
+      output_contains: "Hello, World!"
+
+- name: effect-typewriter-speed
+  description: Typewriter with custom speed
+  input: |
+    :: Start
+    @effect typewriter speed:20 {
+    Fast typing!
+    }
+  play:
+    - wait: 100
+      output_length_min: 5
+
+- name: effect-fade-in
+  description: Fade in effect
+  input: |
+    :: Start
+    @effect fade-in 500ms {
+    Appearing text.
+    }
+  expected:
+    has_effect: "fade-in"
+    effect_duration: 500
+
+- name: effect-fade-out
+  description: Fade out effect
+  input: |
+    :: Start
+    @effect fade-out 300ms {
+    Disappearing text.
+    }
+  expected:
+    has_effect: "fade-out"
+
+- name: effect-shake
+  description: Shake effect for emphasis
+  input: |
+    :: Start
+    @effect shake 200ms intensity:5 {
+    DANGER!
+    }
+  expected:
+    has_effect: "shake"
+    effect_options:
+      intensity: 5
+
+- name: effect-rainbow
+  description: Rainbow color cycling effect
+  input: |
+    :: Start
+    @effect rainbow 1s {
+    Colorful text!
+    }
+  expected:
+    has_effect: "rainbow"
+
+- name: effect-glitch
+  description: Glitch distortion effect
+  input: |
+    :: Start
+    @effect glitch 500ms {
+    S̷y̴s̵t̴e̶m̸ ̴e̵r̸r̵o̵r̷
+    }
+  expected:
+    has_effect: "glitch"
+
+- name: effect-chained
+  description: Chained effects
+  input: |
+    :: Start
+    @effect fade-in 200ms {
+    @effect typewriter {
+    Fading in while typing.
+    }
+    }
+  expected:
+    has_effects: ["fade-in", "typewriter"]
+
+- name: effect-on-choice
+  description: Effect on choice text
+  input: |
+    :: Start
+    + @effect shake 100ms {[Dangerous choice]}
+      Risky!
+  expected:
+    choice_has_effect: true
+
+- name: effect-custom-handler
+  description: Custom effect handler
+  input: |
+    @effect bounce = {
+      duration: 500ms
+      handler: "wave"
+      amplitude: 10
+    }
+    :: Start
+    @effect bounce {
+    Bouncing text!
+    }
+  expected:
+    has_effect: "bounce"
+
+- name: effect-inline
+  description: Inline effect syntax
+  input: |
+    :: Start
+    Normal text and [shake:SCARY] continues.
+  expected:
+    has_inline_effect: true
+
+- name: effect-cancel
+  description: Cancel active effect
+  input: |
+    :: Start
+    @effect typewriter id:typing {
+    This is a very long text that types slowly...
+    }
+    @delay 100ms {
+    @cancel typing
+    }
+  play:
+    - wait: 150
+      effect_cancelled: true
+
+- name: effect-pause-resume
+  description: Pause and resume effect
+  input: |
+    :: Start
+    @effect typewriter id:text {
+    Typing text here.
+    }
+    + [Pause]
+      @pause text
+    + [Resume]
+      @resume text
+  expected:
+    valid: true
+
+- name: effect-skip
+  description: Skip to effect completion
+  input: |
+    :: Start
+    @effect typewriter {
+    Long text content...
+    }
+    + [Skip] @skip_effect
+      Skipped!
+  expected:
+    valid: true
+
+- name: effect-wait-complete
+  description: Wait for effect to complete
+  input: |
+    :: Start
+    @effect typewriter {
+    First message.
+    }
+    @wait_effect
+    @effect typewriter {
+    Second message.
+    }
+  play:
+    - output_sequence: ["First message", "Second message"]

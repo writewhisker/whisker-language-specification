@@ -1,0 +1,155 @@
+# WLS Migration Tests
+# Tests for legacy syntax migration scenarios
+
+- name: migration-reserved-word-thread
+  description: Rename $thread variable
+  input_1x: |
+    :: Start
+    The $thread is here.
+  expected_2x:
+    output_contains: "$_thread"
+
+- name: migration-reserved-word-await
+  description: Rename $await variable
+  input_1x: |
+    :: Start
+    We $await the result.
+  expected_2x:
+    output_contains: "$_await"
+
+- name: migration-reserved-word-spawn
+  description: Rename $spawn variable
+  input_1x: |
+    :: Start
+    Need to $spawn process.
+  expected_2x:
+    output_contains: "$_spawn"
+
+- name: migration-reserved-word-multiple
+  description: Multiple reserved words renamed
+  input_1x: |
+    :: Start
+    $thread and $await and $spawn
+  expected_2x:
+    output_contains: ["$_thread", "$_await", "$_spawn"]
+
+- name: migration-no-partial-match
+  description: Partial matches not renamed
+  input_1x: |
+    :: Start
+    The $threaded system works.
+  expected_2x:
+    output_contains: "$threaded"
+    output_not_contains: "$_threaded"
+
+- name: migration-tunnel-warning
+  description: Tunnel usage generates warning
+  input_1x: |
+    :: Start
+    + [Enter] ->-> Tunnel
+  expected_2x:
+    warning_contains: "tunnel"
+
+- name: migration-script-block-warning
+  description: Legacy script blocks generate warning
+  input_1x: |
+    :: Start
+    <script>
+      x = 1
+    </script>
+  expected_2x:
+    warning_contains: "script"
+
+- name: migration-if-block-warning
+  description: Legacy if blocks generate warning
+  input_1x: |
+    :: Start
+    {{#if condition}}
+      Text
+    {{/if}}
+  expected_2x:
+    warning_contains: "#if"
+
+- name: migration-each-block-warning
+  description: Legacy each blocks generate warning
+  input_1x: |
+    :: Start
+    {{#each items}}
+      Item
+    {{/each}}
+  expected_2x:
+    warning_contains: "#each"
+
+- name: migration-no-changes-needed
+  description: Clean story needs no migration
+  input_1x: |
+    :: Start
+    Hello, world!
+    + [Continue] -> Next
+
+    :: Next
+    The end.
+  expected_2x:
+    changes_count: 0
+
+- name: migration-preserves-structure
+  description: Story structure preserved after migration
+  input_1x: |
+    :: Start
+    Main passage with $thread.
+    + [Option 1] -> One
+    + [Option 2] -> Two
+
+    :: One
+    First option.
+
+    :: Two
+    Second option.
+  expected_2x:
+    has_passage: ["Start", "One", "Two"]
+    has_choices: 2
+
+- name: migration-header-added
+  description: Migration header comment added
+  input_1x: |
+    :: Start
+    Content with $thread.
+  expected_2x:
+    starts_with: "// Migrated to WLS"
+
+- name: migration-header-not-duplicated
+  description: Header not duplicated on re-migration
+  input_1x: |
+    // Migrated to WLS
+    :: Start
+    Content with $thread.
+  expected_2x:
+    header_count: 1
+
+- name: migration-complex-story
+  description: Complex story migration
+  input_1x: |
+    :: Start
+    The $thread begins.
+    <script>
+      counter = 0
+    </script>
+    ->-> Tunnel
+
+    :: Tunnel
+    Inside tunnel with $await.
+    ->->
+
+    :: End
+    Story ends.
+  expected_2x:
+    changes_count_min: 2
+    warnings_count_min: 2
+
+- name: migration-report-generation
+  description: Migration report is generated
+  input_1x: |
+    :: Start
+    $thread $spawn $await
+  expected_2x:
+    report_contains: ["Changes:", "reserved"]

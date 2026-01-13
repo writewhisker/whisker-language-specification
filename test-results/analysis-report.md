@@ -1,4 +1,4 @@
-# WLS 1.0 Test Corpus Analysis Report
+# WLS Test Corpus Analysis Report
 
 **Date:** 2025-12-30
 **Platform:** whisker-editor-web

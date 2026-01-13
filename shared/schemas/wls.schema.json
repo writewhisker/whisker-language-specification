@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://whisker.dev/schemas/wls.schema.json",
+  "title": "Whisker Language Specification",
+  "description": "JSON Schema for WLS story format",
+  "type": "object",
+  "required": ["format", "version", "wls", "metadata", "passages"],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "whisker",
+      "description": "Format identifier, must be 'whisker'"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Format version (e.g., '2.1')",
+      "examples": ["2.1"]
+    },
+    "wls": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "WLS specification version (e.g., '1.0')",
+      "examples": ["1.0"]
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "settings": {
+      "$ref": "#/definitions/Settings"
+    },
+    "variables": {
+      "$ref": "#/definitions/Variables"
+    },
+    "passages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Passage"
+      },
+      "minItems": 1,
+      "description": "Array of passage objects"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Asset"
+      },
+      "description": "Array of asset references"
+    }
+  },
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "description": "Story metadata",
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Story title",
+          "examples": ["The Enchanted Forest"]
+        },
+        "author": {
+          "type": "string",
+          "description": "Author name",
+          "examples": ["Jane Writer"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Story version (semver)",
+          "examples": ["1.0.0"]
+        },
+        "ifid": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Interactive Fiction ID (UUID)",
+          "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief story description"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (ISO 8601)"
+        },
+        "modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp (ISO 8601)"
+        },
+        "start": {
+          "type": "string",
+          "description": "Start passage ID",
+          "examples": ["Start"]
+        }
+      }
+    },
+    "Settings": {
+      "type": "object",
+      "description": "Story settings (implementation-defined)",
+      "additionalProperties": true,
+      "properties": {
+        "debug": {
+          "type": "boolean",
+          "description": "Enable debug mode",
+          "default": false
+        },
+        "historyLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum history entries",
+          "default": 100
+        },
+        "autoSave": {
+          "type": "boolean",
+          "description": "Enable auto-save",
+          "default": false
+        }
+      }
+    },
+    "Variables": {
+      "type": "object",
+      "description": "Initial variable definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/VariableDefinition"
+      },
+      "propertyNames": {
+        "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+      }
+    },
+    "VariableDefinition": {
+      "type": "object",
+      "required": ["type", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["number", "string", "boolean"],
+          "description": "Variable type"
+        },
+        "value": {
+          "description": "Initial value",
+          "oneOf": [
+            { "type": "number" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Variable documentation"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "number" } }
+          },
+          "then": {
+            "properties": { "value": { "type": "number" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "string" } }
+          },
+          "then": {
+            "properties": { "value": { "type": "string" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "boolean" } }
+          },
+          "then": {
+            "properties": { "value": { "type": "boolean" } }
+          }
+        }
+      ]
+    },
+    "Passage": {
+      "type": "object",
+      "required": ["id", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "description": "Unique passage identifier",
+          "examples": ["Start", "Chapter1", "GameOver"]
+        },
+        "content": {
+          "type": "string",
+          "description": "Passage content (raw Whisker markup)"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Passage tags"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PassageMetadata"
+        },
+        "scripts": {
+          "$ref": "#/definitions/PassageScripts"
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Choice"
+          },
+          "description": "Array of choice objects"
+        }
+      }
+    },
+    "PassageMetadata": {
+      "type": "object",
+      "description": "Passage editor metadata",
+      "additionalProperties": true,
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Hex color for editor display",
+          "examples": ["#3498db", "#ff5500"]
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Editor position [x, y]",
+          "examples": [[100, 200]]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Author notes (not displayed to player)"
+        }
+      }
+    },
+    "PassageScripts": {
+      "type": "object",
+      "description": "Passage lifecycle scripts",
+      "additionalProperties": false,
+      "properties": {
+        "onEnter": {
+          "type": ["string", "null"],
+          "description": "Lua script executed when entering passage"
+        },
+        "onExit": {
+          "type": ["string", "null"],
+          "description": "Lua script executed when leaving passage"
+        }
+      }
+    },
+    "Choice": {
+      "type": "object",
+      "required": ["type", "text", "target"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["once", "sticky"],
+          "description": "Choice type: 'once' (disappears after selection) or 'sticky' (always available)"
+        },
+        "condition": {
+          "type": ["string", "null"],
+          "description": "Visibility condition expression",
+          "examples": ["$gold >= 50", "$hasKey and not $doorOpen"]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display text shown to player",
+          "examples": ["Go north", "Buy sword ($50)"]
+        },
+        "action": {
+          "type": ["string", "null"],
+          "description": "Action executed on selection",
+          "examples": ["$gold -= 50", "$hasKey = true; $doorOpen = true"]
+        },
+        "target": {
+          "type": "string",
+          "description": "Target passage ID or special target",
+          "examples": ["NextRoom", "END", "BACK", "RESTART"]
+        }
+      }
+    },
+    "Asset": {
+      "type": "object",
+      "required": ["id", "type", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]*$",
+          "description": "Unique asset identifier",
+          "examples": ["forest-bg", "ambient-music"]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "audio", "video", "other"],
+          "description": "Asset type"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative file path",
+          "examples": ["assets/images/forest.png", "assets/audio/ambient.mp3"]
+        },
+        "mimeType": {
+          "type": "string",
+          "pattern": "^[a-z]+/[a-z0-9.+-]+$",
+          "description": "MIME type",
+          "examples": ["image/png", "audio/mpeg"]
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional asset metadata",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "format": "whisker",
+      "version": "2.1",
+      "wls": "1.0",
+      "metadata": {
+        "title": "Hello World",
+        "author": "Example Author",
+        "version": "1.0.0",
+        "ifid": "550e8400-e29b-41d4-a716-446655440000",
+        "start": "Start"
+      },
+      "variables": {
+        "gold": {
+          "type": "number",
+          "value": 100
+        },
+        "playerName": {
+          "type": "string",
+          "value": "Adventurer"
+        }
+      },
+      "passages": [
+        {
+          "id": "Start",
+          "content": "Welcome, $playerName!\n\nYou have $gold gold coins.",
+          "tags": ["beginning"],
+          "metadata": {
+            "color": "#3498db",
+            "position": [100, 100]
+          },
+          "scripts": {
+            "onEnter": null,
+            "onExit": null
+          },
+          "choices": [
+            {
+              "type": "once",
+              "condition": null,
+              "text": "Begin adventure",
+              "action": null,
+              "target": "Chapter1"
+            },
+            {
+              "type": "once",
+              "condition": null,
+              "text": "Quit",
+              "action": null,
+              "target": "END"
+            }
+          ]
+        },
+        {
+          "id": "Chapter1",
+          "content": "Your adventure begins!\n\nThe road stretches before you.",
+          "tags": ["chapter"],
+          "choices": [
+            {
+              "type": "sticky",
+              "condition": null,
+              "text": "Continue",
+              "action": null,
+              "target": "END"
+            }
+          ]
+        }
+      ],
+      "assets": []
+    }
+  ]
+}

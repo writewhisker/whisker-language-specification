@@ -1,0 +1,203 @@
+# Unicode Edge Cases Test Corpus
+# Tests for proper handling of Unicode characters in WLS
+
+name: Unicode Edge Cases
+description: Tests for emoji, RTL text, combining characters, and other Unicode edge cases
+
+tests:
+  # Emoji tests
+  - id: emoji_in_passage_name
+    description: Passage name containing emoji
+    input: |
+      :: Start 🎮
+      Welcome to the game!
+    expected:
+      valid: true
+      passages: 1
+      passage_names: ["Start 🎮"]
+
+  - id: emoji_in_content
+    description: Content with various emoji
+    input: |
+      :: Start
+      Hello! 👋 How are you feeling today? 😊
+      * [Happy 😄] -> happy
+      * [Sad 😢] -> sad
+    expected:
+      valid: true
+      passages: 1
+      choices: 2
+
+  - id: emoji_in_variable
+    description: Variable containing emoji value
+    input: |
+      VAR mood = "😊"
+      :: Start
+      Your mood is $mood
+    expected:
+      valid: true
+      variables: 1
+
+  - id: emoji_zwj_sequences
+    description: Zero-width joiner emoji sequences
+    input: |
+      :: Start
+      Family: 👨‍👩‍👧‍👦
+      Flag: 🇺🇸
+      Professional: 👩‍💻
+    expected:
+      valid: true
+      passages: 1
+
+  # RTL (Right-to-Left) tests
+  - id: rtl_arabic_content
+    description: Arabic text content
+    input: |
+      :: Start
+      مرحبا بكم في اللعبة
+      * [نعم] -> yes
+      * [لا] -> no
+    expected:
+      valid: true
+      passages: 1
+      choices: 2
+
+  - id: rtl_hebrew_content
+    description: Hebrew text content
+    input: |
+      :: Start
+      שלום וברוכים הבאים
+    expected:
+      valid: true
+      passages: 1
+
+  - id: mixed_rtl_ltr
+    description: Mixed RTL and LTR text
+    input: |
+      :: Start
+      Welcome مرحبا to the game!
+      Press Enter להמשך
+    expected:
+      valid: true
+      passages: 1
+
+  # Combining characters
+  - id: combining_diacritics
+    description: Characters with combining diacritical marks
+    input: |
+      :: Start
+      Café résumé naïve
+      Señor año
+    expected:
+      valid: true
+      passages: 1
+
+  - id: combining_multiple_marks
+    description: Multiple combining marks on single character
+    input: |
+      :: Start
+      Z̴̨̢͓͙̪̮̟̗̗͎̣̗̦̮̳̦̲̾̿̈́̈́̾̐̿͘a̵̧̛͕͈̤̙̖̫̦̗̘̣̰̿̀̀̐̐̊̑̍͐̕l̷̨̛̰̜̝͕͕̹̱̮̗̠̟̊̃͌͊͌͂̍̅̋̊̐ͅg̴̢̧͕̣̦̙̙̱͙̰̫̈́̆̂̐̋̈̒͜o̸̢͓͈̪̬̳̠̜̫̪͇̿̐̿̈̓̿̏̽̈́̕͝
+    expected:
+      valid: true
+      passages: 1
+
+  # CJK characters
+  - id: chinese_characters
+    description: Chinese text content
+    input: |
+      :: 开始
+      欢迎来到游戏
+      * [是] -> yes
+      * [否] -> no
+    expected:
+      valid: true
+      passages: 1
+      choices: 2
+
+  - id: japanese_mixed_scripts
+    description: Japanese with hiragana, katakana, kanji
+    input: |
+      :: スタート
+      ゲームへようこそ！
+      漢字とひらがなとカタカナ
+    expected:
+      valid: true
+      passages: 1
+
+  - id: korean_hangul
+    description: Korean Hangul text
+    input: |
+      :: 시작
+      게임에 오신 것을 환영합니다
+    expected:
+      valid: true
+      passages: 1
+
+  # Special Unicode characters
+  - id: mathematical_symbols
+    description: Mathematical symbols in content
+    input: |
+      :: Start
+      Calculate: α + β = γ
+      Area = πr²
+      Sum: ∑(i=1 to n)
+    expected:
+      valid: true
+      passages: 1
+
+  - id: currency_symbols
+    description: Various currency symbols
+    input: |
+      :: Start
+      Prices: $100, €85, £70, ¥10000, ₹7500
+    expected:
+      valid: true
+      passages: 1
+
+  - id: special_punctuation
+    description: Special punctuation marks
+    input: |
+      :: Start
+      Quotes: "Hello" 'World' «Bonjour» „Guten Tag"
+      Dashes: – — ‐
+      Ellipsis: …
+    expected:
+      valid: true
+      passages: 1
+
+  # Edge cases
+  - id: zero_width_characters
+    description: Zero-width characters in text
+    input: |
+      :: Start
+      Word​with​zero​width​spaces
+    expected:
+      valid: true
+      passages: 1
+
+  - id: bom_handling
+    description: Byte order mark at start
+    input: "\uFEFF:: Start\nContent"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: control_characters
+    description: Visible control character replacements
+    input: |
+      :: Start
+      Tab:	between words
+      Line breaks handled
+    expected:
+      valid: true
+      passages: 1
+
+  - id: surrogate_pairs
+    description: Characters requiring surrogate pairs (emoji, rare CJK)
+    input: |
+      :: Start
+      Rare emoji: 🦖🦕
+      Ancient text: 𐀀𐀁𐀂
+    expected:
+      valid: true
+      passages: 1

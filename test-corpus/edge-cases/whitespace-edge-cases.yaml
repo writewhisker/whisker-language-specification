@@ -1,0 +1,239 @@
+# Whitespace Edge Cases Test Corpus
+# Tests for proper handling of various whitespace scenarios
+
+name: Whitespace Edge Cases
+description: Tests for tabs, spaces, line endings, and other whitespace handling
+
+tests:
+  # Leading/trailing whitespace
+  - id: leading_spaces_in_content
+    description: Content with leading spaces
+    input: |
+      :: Start
+         This line has leading spaces
+    expected:
+      valid: true
+      passages: 1
+
+  - id: trailing_spaces_in_content
+    description: Content with trailing spaces
+    input: ":: Start\nThis line has trailing spaces   \n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: passage_name_with_spaces
+    description: Passage name with leading/trailing spaces
+    input: |
+      ::   Spaced Name
+      Content
+    expected:
+      valid: true
+      passages: 1
+
+  # Tab handling
+  - id: tabs_in_content
+    description: Content with tab characters
+    input: ":: Start\nColumn1\tColumn2\tColumn3\n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: tabs_in_choice_indent
+    description: Choices indented with tabs
+    input: ":: Start\n* [Option 1] -> one\n\t\tNested content\n"
+    expected:
+      valid: true
+      passages: 1
+      choices: 1
+
+  - id: mixed_tabs_spaces
+    description: Mixed tabs and spaces in indentation
+    input: ":: Start\n* [Option] -> target\n \t \tMixed indent\n"
+    expected:
+      valid: true
+      passages: 1
+
+  # Line ending variations
+  - id: unix_line_endings
+    description: Unix-style line endings (LF)
+    input: ":: Start\nLine 1\nLine 2\nLine 3\n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: windows_line_endings
+    description: Windows-style line endings (CRLF)
+    input: ":: Start\r\nLine 1\r\nLine 2\r\nLine 3\r\n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: old_mac_line_endings
+    description: Old Mac-style line endings (CR only)
+    input: ":: Start\rLine 1\rLine 2\r"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: mixed_line_endings
+    description: Mixed line ending styles
+    input: ":: Start\nLine 1\r\nLine 2\rLine 3\n"
+    expected:
+      valid: true
+      passages: 1
+
+  # Blank lines
+  - id: multiple_blank_lines
+    description: Multiple consecutive blank lines
+    input: |
+      :: Start
+      Content
+
+
+      More content
+
+
+
+      Even more
+    expected:
+      valid: true
+      passages: 1
+
+  - id: blank_lines_between_passages
+    description: Blank lines between passages
+    input: |
+      :: Start
+      Content
+
+
+      :: Second
+      More content
+    expected:
+      valid: true
+      passages: 2
+
+  - id: no_blank_line_between_passages
+    description: No blank line between passages
+    input: |
+      :: Start
+      Content
+      :: Second
+      More content
+    expected:
+      valid: true
+      passages: 2
+
+  # Indentation edge cases
+  - id: zero_indent
+    description: Content with no indentation
+    input: |
+      :: Start
+      No indent at all
+    expected:
+      valid: true
+      passages: 1
+
+  - id: deep_indentation
+    description: Very deep indentation
+    input: |
+      :: Start
+      * [Level 1]
+        * [Level 2]
+          * [Level 3]
+            * [Level 4]
+              * [Level 5] -> deep
+    expected:
+      valid: true
+      passages: 1
+
+  - id: inconsistent_indentation
+    description: Inconsistent indentation within passage
+    input: |
+      :: Start
+      Content
+       One space
+        Two spaces
+         Three spaces
+    expected:
+      valid: true
+      passages: 1
+
+  # Empty lines and spaces
+  - id: only_whitespace_content
+    description: Content that is only whitespace
+    input: ":: Start\n   \n   \n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: whitespace_in_expressions
+    description: Whitespace in expression braces
+    input: |
+      :: Start
+      Value: {  $x  +  $y  }
+      Condition: {if  $a > 0 :yes|no}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: no_space_around_operators
+    description: No spaces around operators
+    input: |
+      :: Start
+      {$x+$y*$z}
+      {if $a>0:yes|no}
+    expected:
+      valid: true
+      passages: 1
+
+  # Special whitespace characters
+  - id: non_breaking_space
+    description: Non-breaking space character
+    input: ":: Start\nWord\u00A0word\n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: em_space_en_space
+    description: Em space and en space
+    input: ":: Start\nEm\u2003space En\u2002space\n"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: ideographic_space
+    description: Ideographic (CJK) space
+    input: ":: Start\nWord\u3000word\n"
+    expected:
+      valid: true
+      passages: 1
+
+  # Edge cases with file structure
+  - id: file_starts_with_blank_lines
+    description: File starting with blank lines
+    input: |
+
+
+      :: Start
+      Content
+    expected:
+      valid: true
+      passages: 1
+
+  - id: file_ends_without_newline
+    description: File ending without final newline
+    input: ":: Start\nContent"
+    expected:
+      valid: true
+      passages: 1
+
+  - id: only_newlines
+    description: File with only newlines
+    input: |+
+
+
+
+    expected:
+      valid: true
+      passages: 0

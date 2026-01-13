@@ -1,4 +1,4 @@
-// WLS 1.0 Example: Lua API
+// WLS Example: Lua API
 // Demonstrates the whisker.* Lua API functions
 
 @title: Lua API Demo

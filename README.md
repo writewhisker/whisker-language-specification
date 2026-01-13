@@ -1,4 +1,4 @@
-# Whisker Language Specification 1.0
+# Whisker Language Specification (WLS)
 
 The official specification for the Whisker interactive fiction language.
 
@@ -6,7 +6,7 @@ The official specification for the Whisker interactive fiction language.
 
 ```
 whisker-language-specification/
-├── spec/               # Formal specification documents
+├── spec/               # Formal specification documents (14 chapters)
 │   ├── 01-INTRODUCTION.md
 │   ├── 02-CORE_CONCEPTS.md
 │   ├── 03-SYNTAX.md
@@ -18,18 +18,21 @@ whisker-language-specification/
 │   ├── 09-EXAMPLES.md
 │   ├── 10-BEST_PRACTICES.md
 │   ├── 11-VALIDATION.md
-│   ├── GRAMMAR.ebnf
-│   └── WLS-1.0-COMPLETE.md
+│   ├── 12-MODULES.md
+│   ├── 13-PRESENTATION.md
+│   ├── 14-DEVELOPER-EXPERIENCE.md
+│   ├── APPENDICES.md
+│   └── APPENDIX-A-ERROR-CODES.md
 │
-├── examples/           # Canonical WLS 1.0 examples
+├── examples/           # Canonical WLS examples
 │   ├── beginner/       # Start here - simple stories
 │   ├── intermediate/   # Core features
 │   └── advanced/       # Complex games and API demos
 │
-├── test-corpus/        # Conformance test cases
-│   ├── validation/     # Validator tests
+├── test-corpus/        # Conformance test cases (22 categories)
+│   ├── validation/     # Semantic validation tests
 │   ├── syntax/         # Parser tests
-│   └── ...
+│   └── ...             # See test-corpus/README.md for full list
 │
 ├── tools/              # Testing and validation tools
 │   ├── validation-corpus-runner.ts
@@ -41,12 +44,13 @@ whisker-language-specification/
 │   ├── CROSS_PLATFORM_VALIDATION.md
 │   └── ...
 │
-├── research/           # Research and analysis
-│   └── outputs/
+├── shared/             # Shared resources
+│   └── schemas/
+│       └── wls.schema.json
 │
-└── shared/             # Shared resources
-    └── schemas/
-        └── wls-1.0.schema.json
+├── GRAMMAR.ebnf        # Formal EBNF grammar (411 lines)
+├── HOOKS.md            # Hooks system documentation
+└── WLS_OVERVIEW.md     # Specification overview
 ```
 
 ## Implementations
@@ -96,7 +100,7 @@ cd tools && lua validation-corpus-runner.lua
 
 ## File Format
 
-WLS 1.0 stories use the `.ws` extension and are UTF-8 encoded plain text.
+WLS stories use the `.ws` extension and are UTF-8 encoded plain text.
 
 ```whisker
 @title: My Story

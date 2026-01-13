@@ -1,4 +1,4 @@
-// WLS 1.0 Example: Text Alternatives
+// WLS Example: Text Alternatives
 // Demonstrates sequence, cycle, shuffle, and once-only alternatives
 
 @title: Text Alternatives Demo

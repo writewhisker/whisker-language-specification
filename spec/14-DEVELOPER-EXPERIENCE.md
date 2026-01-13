@@ -1,10 +1,10 @@
 # Chapter 14: Developer Experience
 
-This chapter specifies WLS 1.0's developer tooling including error messages, language server protocol, debugging, and CLI tools.
+This chapter specifies WLS's developer tooling including error messages, language server protocol, debugging, and CLI tools.
 
 ## 14.1 Error Message Format
 
-WLS 1.0 uses a standardized error message format across all platforms.
+WLS uses a standardized error message format across all platforms.
 
 ### 14.1.1 Error Message Structure
 
@@ -82,7 +82,7 @@ Errors should include:
 
 ## 14.2 Language Server Protocol
 
-WLS 1.0 provides a Language Server Protocol (LSP) implementation for IDE integration.
+WLS provides a Language Server Protocol (LSP) implementation for IDE integration.
 
 ### 14.2.1 Supported Capabilities
 
@@ -157,7 +157,7 @@ Diagnostics update on:
 
 ## 14.3 Debugging Support
 
-WLS 1.0 supports debugging via the Debug Adapter Protocol (DAP).
+WLS supports debugging via the Debug Adapter Protocol (DAP).
 
 ### 14.3.1 Breakpoint Types
 
@@ -216,7 +216,7 @@ Shows navigation history and tunnel calls:
 
 ## 14.4 CLI Tools
 
-WLS 1.0 includes command-line tools for development workflows.
+WLS includes command-line tools for development workflows.
 
 ### 14.4.1 whisker-lint
 

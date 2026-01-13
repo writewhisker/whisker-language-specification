@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
--- WLS 1.0 Validation Corpus Runner for whisker-core
+-- WLS Validation Corpus Runner for whisker-core
 -- Runs validation test corpus against Lua validators
 --
 -- Usage: lua validation-corpus-runner.lua [corpus_path] [output_file] [whisker_core_path]
@@ -258,7 +258,7 @@ end
 
 -- Main runner
 local function main()
-    print("WLS 1.0 Validation Corpus Runner for whisker-core")
+    print("WLS Validation Corpus Runner for whisker-core")
     print("================================================")
     print("Loading validation tests from: " .. CORPUS_PATH)
     print("")

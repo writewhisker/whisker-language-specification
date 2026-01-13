@@ -1,4 +1,4 @@
-// WLS 1.0 Example: First Story
+// WLS Example: First Story
 // A minimal example to get started with Whisker
 
 @title: My First Story

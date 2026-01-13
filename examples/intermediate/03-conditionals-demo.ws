@@ -1,4 +1,4 @@
-// WLS 1.0 Example: Conditionals
+// WLS Example: Conditionals
 // Demonstrates conditional blocks, elif chains, and nested conditions
 
 @title: Conditionals Demo

@@ -1,0 +1,165 @@
+# WLS Thread Tests (Advanced Feature)
+# Tests for parallel narrative thread execution
+
+- name: thread-spawn-basic
+  description: Basic thread spawning with == syntax
+  input: |
+    :: Start
+    Main content.
+    -> Background
+    More main content.
+
+    == Background
+    Background content.
+    -> END
+  expected:
+    valid: true
+    threads: 2
+
+- name: thread-interleave
+  description: Thread content interleaving
+  input: |
+    :: Start
+    -> Ambient
+    Main.
+
+    == Ambient
+    {~|Sound1|Sound2|}
+  play:
+    - output_contains: ["Main"]
+
+- name: thread-spawn-multiple
+  description: Spawning multiple threads from main
+  input: |
+    :: Start
+    Main story.
+    -> Thread1
+    -> Thread2
+    Continue main.
+
+    == Thread1
+    First thread.
+    -> END
+
+    == Thread2
+    Second thread.
+    -> END
+  expected:
+    valid: true
+    threads: 3
+
+- name: thread-await-completion
+  description: Main thread awaits spawned thread
+  input: |
+    :: Start
+    Starting task.
+    -> Task <<
+    Task completed!
+
+    == Task
+    Processing...
+    -> END
+  play:
+    - output_contains: ["Starting task", "Task completed!"]
+
+- name: thread-local-variables
+  description: Thread-local variables don't leak
+  input: |
+    :: Start
+    @thread_local counter = 10
+    -> Worker
+    Main counter: $counter
+
+    == Worker
+    @thread_local counter = 20
+    Worker counter: $counter
+    -> END
+  play:
+    - output_contains: ["Main counter: 10", "Worker counter: 20"]
+
+- name: thread-priority-high
+  description: High priority threads execute first
+  input: |
+    :: Start
+    -> Low [priority: 1]
+    -> High [priority: 10]
+
+    == Low
+    Low priority.
+    -> END
+
+    == High
+    High priority.
+    -> END
+  expected:
+    first_output_contains: "High priority"
+
+- name: thread-sync-point
+  description: Threads synchronize at sync point
+  input: |
+    :: Start
+    -> Worker1
+    -> Worker2
+    @sync
+    All workers done.
+
+    == Worker1
+    Worker 1 running.
+    -> END
+
+    == Worker2
+    Worker 2 running.
+    -> END
+  play:
+    - output_sequence:
+        - "Worker 1 running"
+        - "Worker 2 running"
+        - "All workers done"
+
+- name: thread-termination
+  description: Thread can be terminated
+  input: |
+    :: Start
+    Starting background.
+    -> Background
+    @terminate Background
+    Background stopped.
+
+    == Background
+    {~|Tick|Tick|Tick|}
+    -> Background
+  play:
+    - output_contains: ["Background stopped"]
+
+- name: thread-error-handling
+  description: Thread errors don't crash main thread
+  input: |
+    :: Start
+    -> Risky
+    Main continues.
+
+    == Risky
+    @error "Something went wrong"
+    -> END
+  expected:
+    valid: true
+    main_completes: true
+
+- name: thread-nested-spawn
+  description: Threads can spawn other threads
+  input: |
+    :: Start
+    Main.
+    -> Level1
+
+    == Level1
+    Level 1.
+    -> Level2
+    -> END
+
+    == Level2
+    Level 2.
+    -> END
+  expected:
+    valid: true
+    threads: 3

@@ -6,7 +6,7 @@
 
 ## 5.1 Overview
 
-Control flow determines which content is displayed based on conditions and story state. WLS 1.0 provides conditional blocks, inline conditionals, and text alternatives for dynamic content generation.
+Control flow determines which content is displayed based on conditions and story state. WLS provides conditional blocks, inline conditionals, and text alternatives for dynamic content generation.
 
 Control flow mechanisms:
 

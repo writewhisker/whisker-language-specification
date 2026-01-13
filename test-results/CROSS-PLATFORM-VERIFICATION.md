@@ -1,7 +1,7 @@
-# WLS 1.0 Cross-Platform Validation Verification
+# WLS Cross-Platform Validation Verification
 
 **Date:** 2025-12-31
-**Version:** WLS 1.0
+**Version:** WLS
 
 ## Summary
 
@@ -97,4 +97,4 @@ node tools/compare-validation-results.cjs
 
 ## Conclusion
 
-WLS 1.0 validation is fully cross-platform compatible. Stories validated by either implementation will produce identical error codes, severities, and issue counts.
+WLS validation is fully cross-platform compatible. Stories validated by either implementation will produce identical error codes, severities, and issue counts.

@@ -1,4 +1,4 @@
-// WLS 1.0 MAP Example
+// WLS MAP Example
 // Demonstrates MAP declarations and operations
 // MAPs are key-value collections (objects)
 

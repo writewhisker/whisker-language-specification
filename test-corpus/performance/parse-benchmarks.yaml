@@ -1,0 +1,183 @@
+# Parse Performance Benchmarks
+# Tests for measuring parse time performance
+
+name: Parse Benchmarks
+description: Performance tests for parser speed
+
+metadata:
+  version: "1.0"
+  platform: ["typescript", "lua"]
+
+benchmarks:
+  # Small file benchmarks
+  - id: small_simple
+    description: Small simple story (10 passages)
+    size: small
+    passages: 10
+    expected_parse_time_ms: 10
+    generator:
+      passages: 10
+      content_lines: 3
+      choices_per_passage: 2
+
+  - id: small_with_variables
+    description: Small story with variables (10 passages, 5 vars)
+    size: small
+    passages: 10
+    variables: 5
+    expected_parse_time_ms: 15
+    generator:
+      passages: 10
+      content_lines: 5
+      choices_per_passage: 3
+      variables: 5
+      interpolations_per_passage: 2
+
+  # Medium file benchmarks
+  - id: medium_simple
+    description: Medium story (50 passages)
+    size: medium
+    passages: 50
+    expected_parse_time_ms: 50
+    generator:
+      passages: 50
+      content_lines: 5
+      choices_per_passage: 3
+
+  - id: medium_complex
+    description: Medium story with all features
+    size: medium
+    passages: 50
+    expected_parse_time_ms: 100
+    generator:
+      passages: 50
+      content_lines: 10
+      choices_per_passage: 4
+      conditionals_per_passage: 2
+      variables: 20
+      functions: 5
+      namespaces: 3
+
+  # Large file benchmarks
+  - id: large_simple
+    description: Large story (200 passages)
+    size: large
+    passages: 200
+    expected_parse_time_ms: 200
+    generator:
+      passages: 200
+      content_lines: 5
+      choices_per_passage: 3
+
+  - id: large_complex
+    description: Large complex story
+    size: large
+    passages: 200
+    expected_parse_time_ms: 500
+    generator:
+      passages: 200
+      content_lines: 15
+      choices_per_passage: 5
+      conditionals_per_passage: 3
+      nested_choice_depth: 3
+      variables: 50
+      functions: 20
+      namespaces: 10
+      lists: 10
+      arrays: 10
+      maps: 10
+
+  # Stress test benchmarks
+  - id: stress_passages
+    description: Stress test - many passages (500)
+    size: stress
+    passages: 500
+    expected_parse_time_ms: 1000
+    generator:
+      passages: 500
+      content_lines: 3
+      choices_per_passage: 2
+
+  - id: stress_content
+    description: Stress test - long content per passage
+    size: stress
+    passages: 50
+    expected_parse_time_ms: 500
+    generator:
+      passages: 50
+      content_lines: 100
+      choices_per_passage: 2
+
+  - id: stress_choices
+    description: Stress test - many choices per passage
+    size: stress
+    passages: 50
+    expected_parse_time_ms: 500
+    generator:
+      passages: 50
+      content_lines: 5
+      choices_per_passage: 20
+
+  - id: stress_nesting
+    description: Stress test - deep nesting
+    size: stress
+    passages: 50
+    expected_parse_time_ms: 500
+    generator:
+      passages: 50
+      content_lines: 5
+      nested_choice_depth: 10
+      nested_conditional_depth: 5
+
+  # Specific feature benchmarks
+  - id: unicode_heavy
+    description: Heavy unicode content
+    size: medium
+    passages: 50
+    expected_parse_time_ms: 100
+    generator:
+      passages: 50
+      content_type: unicode
+      content_lines: 10
+
+  - id: expression_heavy
+    description: Many expressions and interpolations
+    size: medium
+    passages: 50
+    expected_parse_time_ms: 150
+    generator:
+      passages: 50
+      content_lines: 5
+      expressions_per_passage: 20
+      interpolations_per_passage: 10
+
+  - id: alternative_heavy
+    description: Many alternative sequences
+    size: medium
+    passages: 50
+    expected_parse_time_ms: 150
+    generator:
+      passages: 50
+      content_lines: 5
+      alternatives_per_passage: 10
+      alternatives_options: 5
+
+thresholds:
+  # Performance thresholds
+  small:
+    max_parse_time_ms: 50
+    max_memory_mb: 10
+  medium:
+    max_parse_time_ms: 200
+    max_memory_mb: 50
+  large:
+    max_parse_time_ms: 1000
+    max_memory_mb: 100
+  stress:
+    max_parse_time_ms: 5000
+    max_memory_mb: 500
+
+# Per-passage metrics
+per_passage_thresholds:
+  max_parse_time_ms: 10
+  max_validation_time_ms: 5

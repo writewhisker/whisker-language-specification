@@ -1,10 +1,10 @@
 # Appendix A: Error Codes Reference
 
-This appendix provides a comprehensive reference for all WLS 1.0 error codes.
+This appendix provides a comprehensive reference for all WLS error codes.
 
 ## Error Code Format
 
-All WLS 1.0 error codes follow the format:
+All WLS error codes follow the format:
 
 ```
 WLS-{CATEGORY}-{NUMBER}
@@ -596,7 +596,7 @@ Script errors for empty scripts, syntax errors, unsafe functions, and large scri
 
 ---
 
-## Collections (COL) - WLS 1.0 Gap 3
+## Collections (COL) - WLS Gap 3
 
 ### WLS-COL-001: duplicate_list_value
 
@@ -614,7 +614,7 @@ Collection errors for empty lists, invalid values, duplicate indices/keys, and u
 
 ---
 
-## Modules (MOD) - WLS 1.0 Gap 4
+## Modules (MOD) - WLS Gap 4
 
 ### WLS-MOD-001: include_not_found
 
@@ -632,7 +632,7 @@ Module errors for circular includes, undefined functions, namespace conflicts, a
 
 ---
 
-## Presentation (PRS) - WLS 1.0 Gap 5
+## Presentation (PRS) - WLS Gap 5
 
 ### WLS-PRS-001: invalid_markdown
 
@@ -650,7 +650,7 @@ Presentation errors for invalid CSS classes, missing media, invalid themes, and 
 
 ---
 
-## Developer Experience (DEV) - WLS 1.0 Gap 6
+## Developer Experience (DEV) - WLS Gap 6
 
 ### WLS-DEV-001: lsp_connection_failed
 
@@ -704,7 +704,7 @@ Presentation errors for invalid CSS classes, missing media, invalid themes, and 
 
 ## Error Message Format
 
-WLS 1.0 uses a standardized error message format:
+WLS uses a standardized error message format:
 
 ```
 WLS-XXX-NNN: Brief description at line L, column C

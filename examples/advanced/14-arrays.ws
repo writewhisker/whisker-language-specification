@@ -1,4 +1,4 @@
-// WLS 1.0 ARRAY Example
+// WLS ARRAY Example
 // Demonstrates ARRAY declarations and operations
 // ARRAYs are 0-indexed collections with numeric indices
 

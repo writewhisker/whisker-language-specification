@@ -6,7 +6,7 @@
 
 ## 9.1 Overview
 
-This chapter provides comprehensive examples demonstrating WLS 1.0 features. Each example builds on previous concepts, progressing from simple to complex.
+This chapter provides comprehensive examples demonstrating WLS features. Each example builds on previous concepts, progressing from simple to complex.
 
 ## 9.2 Hello World
 
@@ -466,7 +466,7 @@ You found the secret center of the maze!
 
 ## 9.10 Complete Game: The Treasure Hunt
 
-A complete mini-game demonstrating multiple WLS 1.0 features:
+A complete mini-game demonstrating multiple WLS features:
 
 ```whisker
 @title: The Treasure Hunt
@@ -492,7 +492,7 @@ A complete mini-game demonstrating multiple WLS 1.0 features:
 @color: #3498db
 
 THE TREASURE HUNT
-A WLS 1.0 Example Game
+A WLS Example Game
 
 You are an adventurer seeking the legendary treasure
 hidden in the ruins north of the village.

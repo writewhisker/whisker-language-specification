@@ -1,7 +1,7 @@
 {
   "name": "@wls/validation-tools",
   "version": "1.0.0",
-  "description": "WLS 1.0 Cross-Platform Validation Tools",
+  "description": "WLS Cross-Platform Validation Tools",
   "type": "module",
   "scripts": {
     "test:editor": "npx tsx cross-platform-runner.ts --editor",

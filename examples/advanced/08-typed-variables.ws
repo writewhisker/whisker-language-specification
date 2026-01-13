@@ -1,4 +1,4 @@
-// WLS 1.0 Typed Variables Example
+// WLS Typed Variables Example
 // Converted from v2-typed-variables.whisker (JSON Format 2.0)
 // Demonstrates typed variable declarations and usage
 

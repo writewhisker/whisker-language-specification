@@ -1,0 +1,293 @@
+# Empty Elements Test Corpus
+# Tests for empty passages, choices, content, and other elements
+
+name: Empty Elements
+description: Tests for handling empty or minimal elements
+
+tests:
+  # Empty passages
+  - id: empty_passage
+    description: Passage with no content
+    input: |
+      :: Empty
+    expected:
+      valid: true
+      passages: 1
+      warnings: ["empty_passage"]
+
+  - id: passage_only_whitespace
+    description: Passage with only whitespace content
+    input: |
+      :: Whitespace
+
+    expected:
+      valid: true
+      passages: 1
+
+  - id: multiple_empty_passages
+    description: Multiple empty passages
+    input: |
+      :: First
+
+      :: Second
+
+      :: Third
+    expected:
+      valid: true
+      passages: 3
+
+  # Empty choices
+  - id: choice_empty_text
+    description: Choice with empty text
+    input: |
+      :: Start
+      * [] -> target
+    expected:
+      valid: true
+      passages: 1
+      choices: 1
+
+  - id: choice_whitespace_text
+    description: Choice with only whitespace text
+    input: |
+      :: Start
+      * [   ] -> target
+    expected:
+      valid: true
+      passages: 1
+      choices: 1
+
+  - id: choice_no_target
+    description: Choice without explicit target
+    input: |
+      :: Start
+      * [Option]
+        Inline content only
+    expected:
+      valid: true
+      passages: 1
+      choices: 1
+
+  # Empty content blocks
+  - id: empty_conditional
+    description: Empty conditional block
+    input: |
+      :: Start
+      {if $x > 0}
+      {/}
+      After
+    expected:
+      valid: true
+      passages: 1
+
+  - id: empty_else_branch
+    description: Empty else branch
+    input: |
+      :: Start
+      {if $x > 0}
+        Content
+      {else}
+      {/}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: empty_do_block
+    description: Empty do block
+    input: |
+      :: Start
+      {do}
+      After
+    expected:
+      valid: true
+      passages: 1
+
+  # Empty declarations
+  - id: empty_list
+    description: Empty LIST declaration
+    input: |
+      LIST empty =
+
+      :: Start
+      Content
+    expected:
+      valid: true
+      lists: 1
+
+  - id: empty_array
+    description: Empty ARRAY declaration
+    input: |
+      ARRAY empty = []
+
+      :: Start
+      Content
+    expected:
+      valid: true
+      arrays: 1
+
+  - id: empty_map
+    description: Empty MAP declaration
+    input: |
+      MAP empty = {}
+
+      :: Start
+      Content
+    expected:
+      valid: true
+      maps: 1
+
+  # Empty function/namespace
+  - id: empty_function
+    description: Empty function body
+    input: |
+      FUNCTION empty()
+      END FUNCTION
+
+      :: Start
+      {empty()}
+    expected:
+      valid: true
+      functions: 1
+
+  - id: empty_namespace
+    description: Empty namespace
+    input: |
+      NAMESPACE Empty
+      END NAMESPACE
+
+      :: Start
+      Content
+    expected:
+      valid: true
+      namespaces: 1
+
+  # Empty strings
+  - id: empty_string_variable
+    description: Variable initialized to empty string
+    input: |
+      VAR name = ""
+
+      :: Start
+      Name: $name
+    expected:
+      valid: true
+      variables: 1
+
+  - id: empty_string_in_expression
+    description: Empty string in expression
+    input: |
+      :: Start
+      {if $name == ""}
+        No name set
+      {/}
+    expected:
+      valid: true
+      passages: 1
+
+  # Empty alternatives
+  - id: empty_alternative_branch
+    description: Alternative with empty branch
+    input: |
+      :: Start
+      {~||c}
+    expected:
+      valid: true
+      passages: 1
+
+  - id: single_alternative
+    description: Alternative with single option
+    input: |
+      :: Start
+      {~only}
+    expected:
+      valid: true
+      passages: 1
+
+  # Empty metadata
+  - id: empty_tags
+    description: Passage with empty tags
+    input: |
+      :: Start []
+      Content
+    expected:
+      valid: true
+      passages: 1
+
+  - id: empty_directive_value
+    description: Directive with empty value
+    input: |
+      :: Start
+      @fallback:
+      Content
+    expected:
+      valid: true
+      passages: 1
+
+  # Minimal valid file
+  - id: minimal_file
+    description: Minimal valid WLS file
+    input: |
+      :: Start
+    expected:
+      valid: true
+      passages: 1
+
+  - id: single_character_content
+    description: Single character content
+    input: |
+      :: Start
+      X
+    expected:
+      valid: true
+      passages: 1
+
+  - id: single_character_passage_name
+    description: Single character passage name
+    input: |
+      :: X
+      Content
+    expected:
+      valid: true
+      passages: 1
+
+  # Empty interpolation
+  - id: empty_interpolation
+    description: Empty interpolation braces
+    input: |
+      :: Start
+      Before {} After
+    expected:
+      valid: true
+      passages: 1
+
+  # Edge cases
+  - id: only_comments
+    description: File with only comments
+    input: |
+      // Just a comment
+      // And another
+    expected:
+      valid: true
+      passages: 0
+
+  - id: passage_with_only_divert
+    description: Passage containing only a divert
+    input: |
+      :: Start
+      -> End
+
+      :: End
+    expected:
+      valid: true
+      passages: 2
+
+  - id: gather_with_no_content
+    description: Gather point with no following content
+    input: |
+      :: Start
+      * [A] -> a
+      * [B] -> b
+      -
+    expected:
+      valid: true
+      passages: 1

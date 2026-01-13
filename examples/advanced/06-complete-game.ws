@@ -1,5 +1,5 @@
-// WLS 1.0 Example: Complete Game
-// A full interactive fiction game demonstrating all WLS 1.0 features
+// WLS Example: Complete Game
+// A full interactive fiction game demonstrating all WLS features
 
 @title: The Crystal Caverns
 @author: Whisker Author

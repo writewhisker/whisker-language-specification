@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
--- WLS 1.0 Validation Parity Test
+-- WLS Validation Parity Test
 -- Tests that Lua validators produce the same results as TypeScript validators
 --
 -- Usage: lua validation-parity-test.lua
@@ -269,7 +269,7 @@ end
 
 -- Run tests
 local function run_tests()
-  print("WLS 1.0 Validation Parity Test")
+  print("WLS Validation Parity Test")
   print("==============================")
   print("")
 

@@ -1,4 +1,4 @@
-// WLS 1.0 Metadata Example
+// WLS Metadata Example
 // Converted from v2-with-metadata.whisker (JSON Format 2.0)
 // Demonstrates passage and choice metadata usage
 

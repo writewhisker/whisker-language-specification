@@ -1,6 +1,6 @@
 #!/usr/bin/env npx ts-node
 /**
- * WLS 1.0 Validation Corpus Runner for whisker-editor-web (TypeScript)
+ * WLS Validation Corpus Runner for whisker-editor-web (TypeScript)
  *
  * Runs validation test corpus against TypeScript validators.
  *
@@ -197,7 +197,7 @@ async function runTest(test: TestCase): Promise<TestResult> {
 
 // Main runner
 async function main(): Promise<boolean> {
-  console.log('WLS 1.0 Validation Corpus Runner for whisker-editor-web');
+  console.log('WLS Validation Corpus Runner for whisker-editor-web');
   console.log('========================================================');
   console.log(`Loading validation tests from: ${CORPUS_PATH}`);
   console.log('');

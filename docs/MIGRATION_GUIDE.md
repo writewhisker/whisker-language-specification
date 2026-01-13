@@ -1,4 +1,4 @@
-# WLS 1.0 Migration Guide
+# WLS Migration Guide
 
 **Version:** 1.0
 **Date:** 2025-12-30
@@ -8,7 +8,7 @@
 
 ### What's Changing
 
-WLS 1.0 introduces a cleaner, more consistent syntax inspired by Lua. Key changes:
+WLS introduces a cleaner, more consistent syntax inspired by Lua. Key changes:
 
 1. **Variable syntax** - `$name` instead of `{{name}}`
 2. **Expression interpolation** - `${expr}` instead of `{{expr}}`
@@ -39,7 +39,7 @@ WLS 1.0 introduces a cleaner, more consistent syntax inspired by Lua. Key change
 
 ### Variables
 
-| Legacy | WLS 1.0 | Notes |
+| Legacy | WLS | Notes |
 |--------|---------|-------|
 | `{{name}}` | `$name` | Variable reference |
 | `{{name = 10}}` | `$name = 10` | Variable assignment |
@@ -53,14 +53,14 @@ WLS 1.0 introduces a cleaner, more consistent syntax inspired by Lua. Key change
 You have {{gold}} gold.
 {{gold = gold + 10}}
 
-# WLS 1.0:
+# WLS:
 You have $gold gold.
 $gold = $gold + 10
 ```
 
 ### Choices
 
-| Legacy | WLS 1.0 | Type |
+| Legacy | WLS | Type |
 |--------|---------|------|
 | `[[Go left\|LeftRoom]]` | `+ [Go left] -> LeftRoom` | Once-only |
 | `[[Go left->LeftRoom]]` | `+ [Go left] -> LeftRoom` | Once-only |
@@ -73,7 +73,7 @@ $gold = $gold + 10
 [[Enter the cave|Cave]]
 [[Talk to the guard->Guard]]
 
-# WLS 1.0:
+# WLS:
 + [Enter the cave] -> Cave
 + [Talk to the guard] -> Guard
 
@@ -83,7 +83,7 @@ $gold = $gold + 10
 
 ### Conditionals
 
-| Legacy | WLS 1.0 | Notes |
+| Legacy | WLS | Notes |
 |--------|---------|-------|
 | `{{if gold > 50}}` | `{$gold > 50}` | Block conditional |
 | `{{endif}}` | `{/}` | End conditional |
@@ -103,7 +103,7 @@ You have some savings.
 You are poor.
 {{endif}}
 
-# WLS 1.0:
+# WLS:
 {$gold >= 100}
 You are wealthy!
 {elif $gold >= 50}
@@ -115,7 +115,7 @@ You are poor.
 
 ### Operators
 
-| Legacy | WLS 1.0 | Operation |
+| Legacy | WLS | Operation |
 |--------|---------|-----------|
 | `&&` | `and` | Logical AND |
 | `\|\|` | `or` | Logical OR |
@@ -132,7 +132,7 @@ You are poor.
 {{if !visited}}
 {{if x != 0}}
 
-# WLS 1.0:
+# WLS:
 {$gold > 50 and $hasKey}
 {not $visited}
 {$x ~= 0}
@@ -140,7 +140,7 @@ You are poor.
 
 ### Text Alternatives
 
-| Legacy | WLS 1.0 | Behavior |
+| Legacy | WLS | Behavior |
 |--------|---------|----------|
 | `{sequence: a \| b \| c}` | `{\| a \| b \| c }` | Sequence |
 | `{cycle: a \| b \| c}` | `{&\| a \| b \| c }` | Cycle |
@@ -153,16 +153,16 @@ You are poor.
 # Legacy:
 The weather is {cycle: sunny|cloudy|rainy}.
 
-# WLS 1.0:
+# WLS:
 The weather is {&| sunny | cloudy | rainy }.
 
-# Once-only alternative (new in WLS 1.0):
+# Once-only alternative (new in WLS):
 {!| First visit text | Second visit | Third visit }
 ```
 
 ### Metadata
 
-| Legacy | WLS 1.0 | Notes |
+| Legacy | WLS | Notes |
 |--------|---------|-------|
 | `::title: My Story` | `@title: My Story` | Story title |
 | `::author: Name` | `@author: Name` | Author |
@@ -185,7 +185,7 @@ cp -r stories/* backup-$(date +%Y%m%d)/
 **Using whisker-editor-web:**
 
 1. Open your story in the editor
-2. Go to File > Export > WLS 1.0 Format
+2. Go to File > Export > WLS Format
 3. Save the migrated story
 
 **Using command line (when available):**
@@ -294,7 +294,7 @@ Your content here.
 ### Getting Help
 
 1. **Documentation:** See USER_GUIDE.md
-2. **Examples:** See /docs/examples/
+2. **Examples:** See examples/
 3. **Issues:** https://github.com/writewhisker/whisker-editor-web/issues
 
 ---
@@ -303,7 +303,7 @@ Your content here.
 
 ### Syntax Comparison
 
-| Feature | Legacy | WLS 1.0 |
+| Feature | Legacy | WLS |
 |---------|--------|---------|
 | Variable | `{{name}}` | `$name` |
 | Expression | `{{expr}}` | `${expr}` |
@@ -348,7 +348,7 @@ This is your first time here.
 [[Go back home->Home]]
 ```
 
-### WLS 1.0 Format
+### WLS Format
 
 ```
 @title: The Cave

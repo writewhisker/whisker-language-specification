@@ -1,0 +1,189 @@
+# WLS Parameterized Passages Tests (Advanced Feature)
+# Tests for passage parameters and argument passing
+
+- name: passage-params-basic
+  description: Basic parameterized passage
+  input: |
+    :: Describe(item)
+    You see a $item.
+
+    :: Start
+    -> Describe("sword") ->
+    -> Describe("shield") ->
+  expected:
+    output_sequence:
+      - "You see a sword."
+      - "You see a shield."
+
+- name: passage-params-default
+  description: Parameter with default value
+  input: |
+    :: Greet(name, title = "friend")
+    Hello, $title $name!
+
+    :: Start
+    -> Greet("Alice") ->
+  expected:
+    output_contains: "Hello, friend Alice!"
+
+- name: passage-params-multiple
+  description: Multiple parameters
+  input: |
+    :: ShowItem(name, count, quality)
+    $count x $name ($quality)
+
+    :: Start
+    -> ShowItem("Potion", 5, "common") ->
+  expected:
+    output_contains: "5 x Potion (common)"
+
+- name: passage-params-typed
+  description: Typed parameters
+  input: |
+    :: Calculate(x: number, y: number)
+    Result: ${x + y}
+
+    :: Start
+    -> Calculate(10, 20) ->
+  expected:
+    output_contains: "Result: 30"
+
+- name: passage-params-expression
+  description: Expression as parameter
+  input: |
+    :: ShowValue(val)
+    Value: $val
+
+    :: Start
+    @set count = 5
+    -> ShowValue(count * 2) ->
+  expected:
+    output_contains: "Value: 10"
+
+- name: passage-params-string-escape
+  description: String parameter with quotes
+  input: |
+    :: Quote(text)
+    "$text"
+
+    :: Start
+    -> Quote("Hello, World") ->
+  expected:
+    output_contains: '"Hello, World"'
+
+- name: passage-params-optional
+  description: Optional parameters
+  input: |
+    :: Format(value, prefix?, suffix?)
+    ${prefix || ""}$value${suffix || ""}
+
+    :: Start
+    -> Format("test") ->
+    -> Format("test", "[", "]") ->
+  expected:
+    output_sequence:
+      - "test"
+      - "[test]"
+
+- name: passage-params-rest
+  description: Rest parameters
+  input: |
+    :: ListAll(...items)
+    @each item in items
+      - $item
+    @endeach
+
+    :: Start
+    -> ListAll("a", "b", "c") ->
+  expected:
+    output_contains: ["- a", "- b", "- c"]
+
+- name: passage-params-nested-call
+  description: Nested parameterized passage calls
+  input: |
+    :: Outer(x)
+    Outer: $x
+    -> Inner(x * 2) ->
+
+    :: Inner(y)
+    Inner: $y
+
+    :: Start
+    -> Outer(5) ->
+  expected:
+    output_sequence:
+      - "Outer: 5"
+      - "Inner: 10"
+
+- name: passage-params-recursive
+  description: Recursive parameterized passage
+  input: |
+    :: Countdown(n)
+    @if n > 0
+      $n...
+      -> Countdown(n - 1) ->
+    @else
+      Blast off!
+    @endif
+
+    :: Start
+    -> Countdown(3) ->
+  expected:
+    output_sequence:
+      - "3..."
+      - "2..."
+      - "1..."
+      - "Blast off!"
+
+- name: passage-params-in-choice
+  description: Parameter in choice target
+  input: |
+    :: Talk(topic)
+    Discussing: $topic
+
+    :: Start
+    + [About weather] -> Talk("weather") ->
+    + [About sports] -> Talk("sports") ->
+    Continue.
+  play:
+    - choose: 0
+      output_contains: "Discussing: weather"
+
+- name: passage-params-tunnel-return
+  description: Parameters with tunnel return
+  input: |
+    :: Transform(input)
+    Processing: $input
+    ->->
+
+    :: Start
+    Before.
+    -> Transform("data") ->
+    After.
+  expected:
+    output_sequence:
+      - "Before"
+      - "Processing: data"
+      - "After"
+
+- name: passage-params-validation
+  description: Parameter type validation
+  input: |
+    :: SetHealth(amount: number)
+    Health set to $amount
+
+    :: Start
+    -> SetHealth("invalid") ->
+  expected:
+    error_code: "WLS-PRM-001"
+
+- name: passage-params-missing
+  description: Missing required parameter
+  input: |
+    :: Required(a, b)
+    $a and $b
+
+    :: Start
+    -> Required("only one") ->
+  expected:
+    error_code: "WLS-PRM-002"

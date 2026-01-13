@@ -6,13 +6,13 @@
 
 ## 3.1 Overview
 
-This chapter provides a complete reference for WLS 1.0 syntax. It covers lexical structure, tokens, operators, expressions, statements, and all syntactic constructs.
+This chapter provides a complete reference for WLS syntax. It covers lexical structure, tokens, operators, expressions, statements, and all syntactic constructs.
 
 ## 3.2 Lexical Structure
 
 ### 3.2.1 Character Set
 
-WLS 1.0 source files MUST be encoded in UTF-8. All Unicode characters are permitted in:
+WLS source files MUST be encoded in UTF-8. All Unicode characters are permitted in:
 
 - String literals
 - Comments
@@ -57,7 +57,7 @@ The quick brown fox.    // Spaces preserved
 
 ### 3.2.4 Indentation
 
-Indentation is **not semantically significant** in WLS 1.0. It is used for readability only.
+Indentation is **not semantically significant** in WLS. It is used for readability only.
 
 ```whisker
 // Both are equivalent
@@ -735,7 +735,7 @@ Welcome, $playerName!
 
 ## 3.16 Complete Grammar Summary
 
-See [Appendix A: EBNF Grammar](GRAMMAR.ebnf) for the complete formal grammar.
+See [GRAMMAR.ebnf](../GRAMMAR.ebnf) for the complete formal grammar.
 
 ### 3.16.1 Top-Level Structure
 

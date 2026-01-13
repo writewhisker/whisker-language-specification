@@ -1,4 +1,4 @@
-# WLS 1.0 Performance Benchmarks
+# WLS Performance Benchmarks
 
 **Date:** 2025-12-30
 **Platform:** whisker-editor-web (TypeScript/Node.js)
@@ -75,7 +75,7 @@ The 50MB target is appropriate for browser-based editing with a reasonable story
 | Small | 10 | 1,213 | Variables, choices |
 | Medium | 100 | 13,451 | Variables, choices |
 | Large | 1,000 | 143,049 | Variables, choices |
-| Complex | 8 | 1,001 | All WLS 1.0 features |
+| Complex | 8 | 1,001 | All WLS features |
 
 ### Complex Story Features
 

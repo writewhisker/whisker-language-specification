@@ -1,4 +1,4 @@
-// WLS 1.0 Example: Choices
+// WLS Example: Choices
 // Demonstrates all choice syntax variations
 
 @title: Choices Demo

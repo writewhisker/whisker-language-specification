@@ -1,4 +1,4 @@
-# WLS 1.0 Behavioral Differences Report
+# WLS Behavioral Differences Report
 
 **Version:** 1.0
 **Date:** 2025-12-30
@@ -6,7 +6,7 @@
 
 ## Overview
 
-This document catalogs behavioral differences between WLS 1.0 implementations:
+This document catalogs behavioral differences between WLS implementations:
 - **whisker-core**: Lua runtime (Phase 2 - pending)
 - **whisker-editor-web**: TypeScript/Browser (Phase 3 - complete)
 
@@ -21,7 +21,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 
 ### 1. State Management
 
-#### Expected Behavior (WLS 1.0 Spec)
+#### Expected Behavior (WLS Spec)
 - Variables use `$name` syntax
 - Assignment: `$var = value`
 - Interpolation: `${expr}`
@@ -44,7 +44,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 
 ### 2. Navigation
 
-#### Expected Behavior (WLS 1.0 Spec)
+#### Expected Behavior (WLS Spec)
 - Choice targets: `+ [text] -> Target`
 - Passage transitions via runtime
 - History tracking
@@ -63,7 +63,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 
 ### 3. Choice Processing
 
-#### Expected Behavior (WLS 1.0 Spec)
+#### Expected Behavior (WLS Spec)
 - Once-only: `+ [text] -> Target`
 - Sticky: `* [text] -> Target`
 - Conditions: `{condition} + [text] -> Target`
@@ -81,7 +81,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 
 ### 4. Content Rendering
 
-#### Expected Behavior (WLS 1.0 Spec)
+#### Expected Behavior (WLS Spec)
 - Plain text content
 - Variable interpolation: `${expr}`
 - Conditional blocks: `{cond}...{/}`
@@ -104,7 +104,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 
 ### 5. Conditional Blocks
 
-#### Expected Behavior (WLS 1.0 Spec)
+#### Expected Behavior (WLS Spec)
 - Block: `{condition} content {/}`
 - Else: `{else}` or `{elif condition}`
 - Inline: `{cond? true | false}`
@@ -135,7 +135,7 @@ This document catalogs behavioral differences between WLS 1.0 implementations:
 **Severity:** High
 **Tests:** 5
 
-**Expected (per WLS 1.0):**
+**Expected (per WLS):**
 ```whisker
 :: Start
 {!| First | Second | Third }
@@ -165,13 +165,13 @@ Lexer treats `!` as C-style negation operator and rejects it, without checking i
 Value: {{ whisker.state.get("gold") }}
 ```
 
-**WLS 1.0 Syntax (whisker-editor-web):**
+**WLS Syntax (whisker-editor-web):**
 ```whisker
 Value: ${whisker.state.get("gold")}
 ```
 
 **Root Cause:**
-Test corpus was written with different syntax expectations. The WLS 1.0 spec uses `${}` for expressions/interpolation.
+Test corpus was written with different syntax expectations. The WLS spec uses `${}` for expressions/interpolation.
 
 **Resolution:** Update test corpus to use correct syntax, or mark API tests as runtime-only.
 
@@ -261,7 +261,7 @@ When whisker-core becomes available, compare:
 
 ## Recommendations
 
-### Critical Fixes (Before WLS 1.0 Release)
+### Critical Fixes (Before WLS Release)
 
 1. **Fix `{!| }` once-only alternatives** - Parser bug
 2. **Add Unicode support** - Content internationalization

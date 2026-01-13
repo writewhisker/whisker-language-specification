@@ -1,0 +1,157 @@
+# WLS LIST State Machine Tests (Advanced Feature)
+# Tests for LIST-based state management
+
+- name: list-define-basic
+  description: Basic LIST definition
+  input: |
+    LIST colors = red, green, blue
+    :: Start
+    Colors defined.
+  expected:
+    valid: true
+
+- name: list-define-with-initial
+  description: LIST with initial selected value
+  input: |
+    LIST state = (idle), running, stopped
+    :: Start
+    State is ${state}.
+  expected:
+    output_contains: "idle"
+
+- name: list-add-state
+  description: Adding value to LIST
+  input: |
+    LIST state = (a), b, c
+    :: Start
+    {do state += b}
+    {state ? b}Has B{/}
+  expected:
+    output_contains: "Has B"
+
+- name: list-remove-state
+  description: Removing value from LIST
+  input: |
+    LIST state = a, (b), c
+    :: Start
+    {do state -= b}
+    {state ? b}Has B{else}No B{/}
+  expected:
+    output_contains: "No B"
+
+- name: list-toggle-state
+  description: Toggle LIST value on/off
+  input: |
+    LIST flags = (flag1), flag2
+    :: Start
+    {do flags ^= flag2}
+    {flags ? flag2}Flag2 on{/}
+  expected:
+    output_contains: "Flag2 on"
+
+- name: list-check-any
+  description: Check if any value present
+  input: |
+    LIST items = (sword), (shield), armor
+    :: Start
+    {items ? (sword, shield)}Has weapon or shield{/}
+  expected:
+    output_contains: "Has weapon or shield"
+
+- name: list-check-all
+  description: Check if all values present
+  input: |
+    LIST items = (sword), (shield), armor
+    :: Start
+    {items ? sword & shield}Has both{/}
+  expected:
+    output_contains: "Has both"
+
+- name: list-check-none
+  description: Check if no values present
+  input: |
+    LIST items = sword, shield, armor
+    :: Start
+    {items !? (sword, shield)}Has neither{/}
+  expected:
+    output_contains: "Has neither"
+
+- name: list-set-value
+  description: Set LIST to specific value
+  input: |
+    LIST phase = start, (middle), end
+    :: Start
+    {do phase = end}
+    Phase: ${phase}
+  expected:
+    output_contains: "end"
+
+- name: list-clear
+  description: Clear all LIST values
+  input: |
+    LIST flags = (a), (b), (c)
+    :: Start
+    {do flags = ()}
+    {flags ? a}A{else}Empty{/}
+  expected:
+    output_contains: "Empty"
+
+- name: list-multilist-interaction
+  description: Multiple LISTs interact correctly
+  input: |
+    LIST quest_state = (not_started), in_progress, completed
+    LIST inventory = sword, shield
+    :: Start
+    {do quest_state = in_progress}
+    {do inventory += sword}
+    {quest_state ? in_progress}{inventory ? sword}Fighting{/}{/}
+  expected:
+    output_contains: "Fighting"
+
+- name: list-exclusive-values
+  description: Single-select LIST behavior
+  input: |
+    LIST mode = [single] day, (night), dawn
+    :: Start
+    {do mode = day}
+    Mode: ${mode}
+  expected:
+    output_contains: "day"
+    output_not_contains: "night"
+
+- name: list-in-conditional
+  description: LIST values in conditionals
+  input: |
+    LIST health = (full), injured, critical
+    :: Start
+    @if health ? full
+      Feeling great!
+    @elseif health ? injured
+      Need healing.
+    @else
+      Danger!
+    @endif
+  expected:
+    output_contains: "Feeling great!"
+
+- name: list-in-choice-condition
+  description: LIST values gate choices
+  input: |
+    LIST abilities = (jump), fly
+    :: Start
+    + [Jump over] @if abilities ? jump
+      Jumped!
+    + [Fly over] @if abilities ? fly
+      Flying!
+  expected:
+    available_choices: 1
+
+- name: list-sequence
+  description: LIST values in sequence
+  input: |
+    LIST events = intro, (main), climax, ending
+    :: Start
+    {do events = climax}
+    Reached: ${events}
+  expected:
+    output_contains: "climax"

@@ -1,4 +1,4 @@
-# WLS 1.0 Lua API Tests
+# WLS Lua API Tests
 # Category: api
 # Count: 25 tests
 # Note: These tests use {{ }} Lua expression syntax (runtime tests)

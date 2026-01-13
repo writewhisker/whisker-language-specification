@@ -1,8 +1,8 @@
 @title: Theming Demo
-@author: WLS 1.0
+@author: WLS
 @version: 1.0.0
 
--- WLS 1.0 Gap 5: Theming Demo
+-- WLS Gap 5: Theming Demo
 -- This story demonstrates the theming system
 
 THEME "dark"

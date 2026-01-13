@@ -1,0 +1,163 @@
+# WLS Audio Tests (Advanced Feature)
+# Tests for @audio declarations and audio playback
+
+- name: audio-declare-basic
+  description: Basic audio declaration
+  input: |
+    @audio bgm = "music/theme.mp3" loop
+    :: Start
+    Music declared.
+  expected:
+    valid: true
+    audio_declarations: 1
+
+- name: audio-declare-multiple
+  description: Multiple audio declarations
+  input: |
+    @audio bgm = "music/theme.mp3" loop
+    @audio sfx_click = "sounds/click.wav"
+    @audio ambient = "sounds/forest.ogg" loop volume:0.5
+    :: Start
+    All audio ready.
+  expected:
+    audio_declarations: 3
+
+- name: audio-play-basic
+  description: Play audio with @play
+  input: |
+    @audio sfx = "sounds/bell.wav"
+    :: Start
+    @play sfx
+    Ring!
+  expected:
+    audio_played: "sfx"
+
+- name: audio-play-inline
+  description: Inline audio play syntax
+  input: |
+    @audio chime = "sounds/chime.wav"
+    :: Start
+    [audio:chime] A gentle chime sounds.
+  expected:
+    audio_played: "chime"
+
+- name: audio-stop
+  description: Stop playing audio
+  input: |
+    @audio bgm = "music/battle.mp3" loop
+    :: Start
+    @play bgm
+    Battle music plays!
+    + [End battle]
+      @stop bgm
+      Silence.
+  expected:
+    valid: true
+
+- name: audio-fade-out
+  description: Fade out audio
+  input: |
+    @audio bgm = "music/theme.mp3" loop
+    :: Start
+    @play bgm
+    Music playing.
+    @delay 1s {
+    @fade bgm 500ms 0
+    Fading out...
+    }
+  expected:
+    valid: true
+
+- name: audio-volume
+  description: Set audio volume
+  input: |
+    @audio bgm = "music/theme.mp3" loop volume:1
+    :: Start
+    @play bgm
+    @volume bgm 0.5
+    Quieter now.
+  expected:
+    audio_volume: { "bgm": 0.5 }
+
+- name: audio-preload
+  description: Preload audio files
+  input: |
+    @audio sfx1 = "sounds/a.wav" preload
+    @audio sfx2 = "sounds/b.wav" preload
+    :: Start
+    Audio preloaded.
+  expected:
+    preloaded: ["sfx1", "sfx2"]
+
+- name: audio-channel
+  description: Audio on specific channel
+  input: |
+    @audio bgm = "music/theme.mp3" channel:music loop
+    @audio sfx = "sounds/click.wav" channel:effects
+    :: Start
+    @play bgm
+    @play sfx
+  expected:
+    channels_used: ["music", "effects"]
+
+- name: audio-crossfade
+  description: Crossfade between tracks
+  input: |
+    @audio track1 = "music/day.mp3" loop
+    @audio track2 = "music/night.mp3" loop
+    :: Start
+    @play track1
+    Day time.
+    + [Night falls]
+      @crossfade track1 track2 1s
+      Now night.
+  expected:
+    valid: true
+
+- name: audio-pause-resume
+  description: Pause and resume audio
+  input: |
+    @audio bgm = "music/theme.mp3" loop
+    :: Start
+    @play bgm
+    + [Pause]
+      @pause bgm
+    + [Resume]
+      @resume bgm
+  expected:
+    valid: true
+
+- name: audio-on-passage
+  description: Audio declaration on passage
+  input: |
+    :: Forest
+    @audio ambient = "sounds/forest.ogg" loop autoplay
+    You enter the forest.
+  expected:
+    passage_audio: "ambient"
+
+- name: audio-conditional
+  description: Conditional audio playback
+  input: |
+    @audio victory = "sounds/victory.wav"
+    @audio defeat = "sounds/defeat.wav"
+    :: Start
+    @set won = true
+    @if won
+      @play victory
+      You won!
+    @else
+      @play defeat
+      You lost.
+    @endif
+  expected:
+    audio_played: "victory"
+
+- name: audio-invalid-path
+  description: Invalid audio path warning
+  input: |
+    @audio missing = "sounds/nonexistent.wav"
+    :: Start
+    @play missing
+  expected:
+    warning_code: "WLS-AUD-001"

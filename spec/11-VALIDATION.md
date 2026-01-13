@@ -1,6 +1,6 @@
 # 11. Semantic Validation
 
-This section defines the semantic validation rules for WLS 1.0. These validations are performed after parsing to catch logical errors, structural issues, and potential runtime problems.
+This section defines the semantic validation rules for WLS. These validations are performed after parsing to catch logical errors, structural issues, and potential runtime problems.
 
 ## 11.1 Validation Error Format
 

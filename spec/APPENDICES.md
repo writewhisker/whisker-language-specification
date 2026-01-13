@@ -217,7 +217,7 @@ Error [E001] at line 5, column 4:
 
 ### E.1 From whisker-core (Lua)
 
-| Old Syntax | New Syntax (WLS 1.0) |
+| Old Syntax | New Syntax (WLS) |
 |------------|----------------------|
 | `&&` | `and` |
 | `||` | `or` |
@@ -238,7 +238,7 @@ Error [E001] at line 5, column 4:
 
 ### E.2 From whisker-editor-web (TypeScript)
 
-| Old Syntax | New Syntax (WLS 1.0) |
+| Old Syntax | New Syntax (WLS) |
 |------------|----------------------|
 | `{{variable}}` | `$variable` |
 | `{{expression}}` | `${expression}` |
@@ -262,7 +262,7 @@ Error [E001] at line 5, column 4:
 - [ ] Update API namespace calls
 - [ ] Change method calls from colon to dot notation
 - [ ] Test all passages for correct behavior
-- [ ] Validate against WLS 1.0 schema
+- [ ] Validate against WLS schema
 - [ ] Run test corpus
 
 ### E.4 Breaking Changes Summary
@@ -288,7 +288,7 @@ Error [E001] at line 5, column 4:
 | **Engine** | Software that executes Whisker stories |
 | **Expression** | A combination of values, variables, and operators that produces a value |
 | **IFID** | Interactive Fiction Identifier - a UUID uniquely identifying a story |
-| **Implementation** | A software system that parses and executes WLS 1.0 stories |
+| **Implementation** | A software system that parses and executes WLS stories |
 | **Interpolation** | Inserting variable or expression values into text |
 | **Literal** | A fixed value written directly in code (number, string, boolean) |
 | **Once-only** | A choice or alternative that disappears after use |

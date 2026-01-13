@@ -1,5 +1,5 @@
 @title: Modules Demo
-@author: WLS 1.0
+@author: WLS
 @version: 1.0.0
 
 @vars
@@ -8,7 +8,7 @@
   $health = 100
 @/vars
 
--- WLS 1.0 Gap 4: Module Features Demo
+-- WLS Gap 4: Module Features Demo
 -- This story demonstrates FUNCTION, NAMESPACE, and INCLUDE features
 
 -- =============================================================================

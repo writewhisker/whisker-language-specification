@@ -1,0 +1,204 @@
+# Validation Performance Benchmarks
+# Tests for measuring validation time performance
+
+name: Validation Benchmarks
+description: Performance tests for validator speed
+
+metadata:
+  version: "1.0"
+  platform: ["typescript", "lua"]
+
+benchmarks:
+  # Structure validation
+  - id: structure_small
+    description: Structure validation on small story
+    validator: structure
+    size: small
+    passages: 10
+    expected_time_ms: 5
+    test_cases:
+      - reachability_check: true
+      - cycle_detection: true
+      - orphan_detection: true
+
+  - id: structure_medium
+    description: Structure validation on medium story
+    validator: structure
+    size: medium
+    passages: 50
+    expected_time_ms: 25
+    test_cases:
+      - reachability_check: true
+      - cycle_detection: true
+      - orphan_detection: true
+
+  - id: structure_large
+    description: Structure validation on large story
+    validator: structure
+    size: large
+    passages: 200
+    expected_time_ms: 100
+    test_cases:
+      - reachability_check: true
+      - cycle_detection: true
+      - orphan_detection: true
+
+  # Link validation
+  - id: links_small
+    description: Link validation on small story
+    validator: links
+    size: small
+    passages: 10
+    links: 20
+    expected_time_ms: 5
+
+  - id: links_medium
+    description: Link validation on medium story
+    validator: links
+    size: medium
+    passages: 50
+    links: 150
+    expected_time_ms: 20
+
+  - id: links_large
+    description: Link validation on large story
+    validator: links
+    size: large
+    passages: 200
+    links: 600
+    expected_time_ms: 100
+
+  # Variable validation
+  - id: variables_small
+    description: Variable validation with few variables
+    validator: variables
+    size: small
+    variables: 5
+    usages: 20
+    expected_time_ms: 5
+
+  - id: variables_medium
+    description: Variable validation with moderate variables
+    validator: variables
+    size: medium
+    variables: 25
+    usages: 200
+    expected_time_ms: 20
+
+  - id: variables_large
+    description: Variable validation with many variables
+    validator: variables
+    size: large
+    variables: 100
+    usages: 1000
+    expected_time_ms: 100
+
+  # Expression validation
+  - id: expressions_simple
+    description: Simple expression validation
+    validator: expressions
+    size: small
+    expressions: 20
+    complexity: simple
+    expected_time_ms: 10
+
+  - id: expressions_complex
+    description: Complex expression validation
+    validator: expressions
+    size: medium
+    expressions: 100
+    complexity: complex
+    expected_time_ms: 50
+
+  - id: expressions_nested
+    description: Deeply nested expression validation
+    validator: expressions
+    size: medium
+    expressions: 50
+    nesting_depth: 10
+    expected_time_ms: 75
+
+  # Collection validation
+  - id: collections_small
+    description: Collection validation with few collections
+    validator: collections
+    size: small
+    lists: 2
+    arrays: 2
+    maps: 2
+    expected_time_ms: 5
+
+  - id: collections_large
+    description: Collection validation with many collections
+    validator: collections
+    size: large
+    lists: 20
+    arrays: 20
+    maps: 20
+    expected_time_ms: 50
+
+  # Full validation suite
+  - id: full_validation_small
+    description: All validators on small story
+    validator: all
+    size: small
+    passages: 10
+    expected_time_ms: 50
+
+  - id: full_validation_medium
+    description: All validators on medium story
+    validator: all
+    size: medium
+    passages: 50
+    expected_time_ms: 200
+
+  - id: full_validation_large
+    description: All validators on large story
+    validator: all
+    size: large
+    passages: 200
+    expected_time_ms: 500
+
+  # Stress tests
+  - id: stress_many_errors
+    description: Story with many validation errors
+    validator: all
+    size: medium
+    passages: 50
+    intentional_errors: 100
+    expected_time_ms: 300
+    note: Validator should handle many errors gracefully
+
+  - id: stress_cyclic_references
+    description: Story with complex cyclic references
+    validator: structure
+    size: medium
+    passages: 50
+    cycles: 20
+    expected_time_ms: 200
+
+thresholds:
+  # Per-validator thresholds
+  structure:
+    max_time_per_passage_ms: 1
+    max_memory_mb: 10
+  links:
+    max_time_per_link_ms: 0.1
+    max_memory_mb: 10
+  variables:
+    max_time_per_usage_ms: 0.1
+    max_memory_mb: 10
+  expressions:
+    max_time_per_expression_ms: 0.5
+    max_memory_mb: 20
+  collections:
+    max_time_per_collection_ms: 1
+    max_memory_mb: 10
+  all:
+    max_total_time_ms: 1000
+    max_memory_mb: 100
+
+# Error handling performance
+error_handling:
+  max_errors_before_abort: 1000
+  max_time_per_error_ms: 0.5

@@ -6,7 +6,7 @@
 
 ## 8.1 Overview
 
-WLS 1.0 defines two file formats for representing stories:
+WLS defines two file formats for representing stories:
 
 | Format | Extension | Purpose |
 |--------|-----------|---------|
@@ -280,7 +280,7 @@ The adventure continues...
 ### 8.3.1 Schema Overview
 
 JSON format version: **2.1**
-Schema file: `wls-1.0.schema.json`
+Schema file: `wls.schema.json`
 
 ```json
 {
@@ -756,11 +756,11 @@ Implementations MUST validate:
 
 ### 8.6.3 Schema Validation
 
-JSON files SHOULD validate against `wls-1.0.schema.json`:
+JSON files SHOULD validate against `wls.schema.json`:
 
 ```bash
 # Example validation command
-ajv validate -s wls-1.0.schema.json -d story.json
+ajv validate -s wls.schema.json -d story.json
 ```
 
 ## 8.7 Versioning

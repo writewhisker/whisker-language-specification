@@ -6,7 +6,7 @@
 
 ## 7.1 Overview
 
-WLS 1.0 uses Lua as its scripting language. The `whisker.*` API provides a unified interface for story logic, state management, and navigation.
+WLS uses Lua as its scripting language. The `whisker.*` API provides a unified interface for story logic, state management, and navigation.
 
 ### 7.1.1 API Namespaces
 
@@ -767,7 +767,7 @@ whisker.print("Entering passage:", whisker.passage.current().id)
 
 ### 7.8.1 Available Functions
 
-WLS 1.0 implementations MUST provide these Lua standard functions:
+WLS implementations MUST provide these Lua standard functions:
 
 | Library | Functions |
 |---------|-----------|
@@ -893,13 +893,13 @@ Implementations MUST:
 
 ### 7.11.2 Dot vs Colon Notation
 
-WLS 1.0 uses dot notation exclusively:
+WLS uses dot notation exclusively:
 
 ```lua
--- Correct (WLS 1.0)
+-- Correct (WLS)
 whisker.state.get("gold")
 
--- Incorrect (not WLS 1.0)
+-- Incorrect (not WLS)
 whisker.state:get("gold")
 ```
 

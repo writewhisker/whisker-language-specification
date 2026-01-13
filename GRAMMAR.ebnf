@@ -1,0 +1,410 @@
+(* ========================================================================== *)
+(* Whisker Language Specification 1.0 - Formal Grammar                        *)
+(* ========================================================================== *)
+(* This grammar uses Extended Backus-Naur Form (EBNF) notation.               *)
+(*                                                                            *)
+(* Notation:                                                                  *)
+(*   =       definition                                                       *)
+(*   ,       concatenation                                                    *)
+(*   |       alternation                                                      *)
+(*   [ ]     optional (zero or one)                                           *)
+(*   { }     repetition (zero or more)                                        *)
+(*   ( )     grouping                                                         *)
+(*   " "     terminal string                                                  *)
+(*   ' '     terminal string (alternative)                                    *)
+(*   (* *)   comment                                                          *)
+(*   -       exception                                                        *)
+(*   ;       end of production                                                *)
+(* ========================================================================== *)
+
+
+(* ========================================================================== *)
+(* 1. STORY STRUCTURE                                                         *)
+(* ========================================================================== *)
+
+story = [ story_header ] , [ vars_block ] , { passage } ;
+
+story_header = { header_directive } ;
+
+header_directive = "@" , header_key , ":" , header_value , newline ;
+
+header_key = "title" | "author" | "version" | "ifid" | "start"
+           | "description" | "created" | "modified" ;
+
+header_value = { any_char - newline } ;
+
+vars_block = "@vars" , newline , { var_declaration } ;
+
+var_declaration = whitespace , identifier , ":" , literal , newline ;
+
+
+(* ========================================================================== *)
+(* 2. PASSAGES                                                                *)
+(* ========================================================================== *)
+
+passage = passage_header , [ passage_directives ] , passage_body ;
+
+passage_header = "::" , whitespace , passage_name , newline ;
+
+passage_name = identifier ;
+
+passage_directives = { passage_directive } ;
+
+passage_directive = "@" , directive_key , ":" , directive_value , newline ;
+
+directive_key = "tags" | "color" | "position" | "notes"
+              | "onEnter" | "onExit" | "fallback" ;
+
+directive_value = { any_char - newline } ;
+
+passage_body = { passage_element } , [ choice_block ] ;
+
+passage_element = content_line
+                | variable_statement
+                | conditional_block
+                | comment
+                | blank_line ;
+
+content_line = { content_element } , newline ;
+
+content_element = plain_text
+                | variable_interpolation
+                | expression_interpolation
+                | inline_conditional
+                | text_alternative
+                | embedded_lua ;
+
+
+(* ========================================================================== *)
+(* 3. VARIABLES                                                               *)
+(* ========================================================================== *)
+
+variable_statement = variable_assignment , newline ;
+
+variable_assignment = variable_ref , assignment_operator , expression ;
+
+variable_ref = story_variable | temp_variable ;
+
+story_variable = "$" , identifier ;
+
+temp_variable = "_" , identifier ;
+
+assignment_operator = "=" | "+=" | "-=" ;
+
+
+(* ========================================================================== *)
+(* 4. INTERPOLATION                                                           *)
+(* ========================================================================== *)
+
+variable_interpolation = story_variable | temp_variable ;
+
+expression_interpolation = "${" , expression , "}" ;
+
+embedded_lua = "{{" , lua_code , "}}" ;
+
+lua_code = { any_char - "}}" } ;
+
+
+(* ========================================================================== *)
+(* 5. EXPRESSIONS                                                             *)
+(* ========================================================================== *)
+
+expression = or_expression ;
+
+or_expression = and_expression , { "or" , and_expression } ;
+
+and_expression = equality_expression , { "and" , equality_expression } ;
+
+equality_expression = comparison_expression ,
+                      { ( "==" | "~=" ) , comparison_expression } ;
+
+comparison_expression = additive_expression ,
+                        [ ( "<" | ">" | "<=" | ">=" ) , additive_expression ] ;
+
+additive_expression = multiplicative_expression ,
+                      { ( "+" | "-" ) , multiplicative_expression } ;
+
+multiplicative_expression = unary_expression ,
+                            { ( "*" | "/" | "%" ) , unary_expression } ;
+
+unary_expression = [ "not" | "-" ] , primary_expression ;
+
+primary_expression = literal
+                   | variable_ref
+                   | function_call
+                   | "(" , expression , ")" ;
+
+function_call = qualified_name , "(" , [ argument_list ] , ")" ;
+
+qualified_name = identifier , { "." , identifier } ;
+
+argument_list = expression , { "," , expression } ;
+
+
+(* ========================================================================== *)
+(* 6. CONDITIONALS                                                            *)
+(* ========================================================================== *)
+
+conditional_block = condition_open ,
+                    block_content ,
+                    { elif_clause } ,
+                    [ else_clause ] ,
+                    condition_close ;
+
+condition_open = "{" , whitespace , expression , whitespace , "}" , newline ;
+
+elif_clause = "{elif" , whitespace , expression , whitespace , "}" , newline ,
+              block_content ;
+
+else_clause = "{else}" , newline , block_content ;
+
+condition_close = "{/}" , newline ;
+
+block_content = { passage_element } ;
+
+inline_conditional = "{" , expression , ":" , inline_true , "|" , inline_false , "}" ;
+
+inline_true = { inline_content } ;
+
+inline_false = { inline_content } ;
+
+inline_content = plain_text
+               | variable_interpolation
+               | expression_interpolation ;
+
+
+(* ========================================================================== *)
+(* 7. TEXT ALTERNATIVES                                                       *)
+(* ========================================================================== *)
+
+text_alternative = sequence_alternative
+                 | cycle_alternative
+                 | shuffle_alternative
+                 | once_alternative ;
+
+sequence_alternative = "{|" , alternative_options , "}" ;
+
+cycle_alternative = "{&|" , alternative_options , "}" ;
+
+shuffle_alternative = "{~|" , alternative_options , "}" ;
+
+once_alternative = "{!|" , alternative_options , "}" ;
+
+alternative_options = alternative_option , { "|" , alternative_option } ;
+
+alternative_option = { alternative_content } ;
+
+alternative_content = plain_text
+                    | variable_interpolation
+                    | expression_interpolation ;
+
+
+(* ========================================================================== *)
+(* 8. CHOICES                                                                 *)
+(* ========================================================================== *)
+
+choice_block = { choice } ;
+
+choice = choice_marker ,
+         [ choice_condition ] ,
+         choice_text ,
+         [ choice_action ] ,
+         choice_target ,
+         newline ;
+
+choice_marker = once_marker | sticky_marker ;
+
+once_marker = "+" ;
+
+sticky_marker = "*" ;
+
+choice_condition = "{" , whitespace , expression , whitespace , "}" ;
+
+choice_text = "[" , { choice_text_content } , "]" ;
+
+choice_text_content = ( any_char - ( "[" | "]" ) )
+                    | variable_interpolation
+                    | expression_interpolation
+                    | text_alternative
+                    | escaped_bracket ;
+
+escaped_bracket = "\[" | "\]" ;
+
+choice_action = "{" , action_statements , "}" ;
+
+action_statements = action_statement , { ";" , action_statement } ;
+
+action_statement = variable_assignment | lua_expression ;
+
+lua_expression = lua_code ;
+
+choice_target = "->" , whitespace , target_name ;
+
+target_name = passage_name | special_target ;
+
+special_target = "END" | "BACK" | "RESTART" ;
+
+
+(* ========================================================================== *)
+(* 9. COMMENTS                                                                *)
+(* ========================================================================== *)
+
+comment = single_line_comment | multi_line_comment ;
+
+single_line_comment = "//" , { any_char - newline } , newline ;
+
+multi_line_comment = "/*" , { any_char - "*/" } , "*/" ;
+
+inline_comment = "//" , { any_char - newline } ;
+
+
+(* ========================================================================== *)
+(* 10. LITERALS                                                               *)
+(* ========================================================================== *)
+
+literal = number_literal | string_literal | boolean_literal ;
+
+number_literal = [ "-" ] , digits , [ "." , digits ] ;
+
+digits = digit , { digit } ;
+
+string_literal = '"' , { string_char } , '"' ;
+
+string_char = ( any_char - ( '"' | "\" | newline ) ) | escape_sequence ;
+
+escape_sequence = "\\" | '\"' | "\n" | "\t" | "\r" | "\$" | "\{" | "\}" ;
+
+boolean_literal = "true" | "false" ;
+
+
+(* ========================================================================== *)
+(* 11. IDENTIFIERS                                                            *)
+(* ========================================================================== *)
+
+identifier = identifier_start , { identifier_char } ;
+
+identifier_start = letter | "_" ;
+
+identifier_char = letter | digit | "_" ;
+
+letter = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j"
+       | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t"
+       | "u" | "v" | "w" | "x" | "y" | "z"
+       | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
+       | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T"
+       | "U" | "V" | "W" | "X" | "Y" | "Z" ;
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+
+(* ========================================================================== *)
+(* 12. WHITESPACE AND FORMATTING                                              *)
+(* ========================================================================== *)
+
+whitespace = { ws_char } ;
+
+required_whitespace = ws_char , { ws_char } ;
+
+ws_char = " " | "\t" ;
+
+newline = "\n" | "\r\n" ;
+
+blank_line = { ws_char } , newline ;
+
+
+(* ========================================================================== *)
+(* 13. KEYWORDS                                                               *)
+(* ========================================================================== *)
+
+(* Reserved keywords - cannot be used as identifiers *)
+
+keyword = "and" | "or" | "not"
+        | "true" | "false"
+        | "else" | "elif"
+        | "END" | "BACK" | "RESTART" ;
+
+
+(* ========================================================================== *)
+(* 14. OPERATORS                                                              *)
+(* ========================================================================== *)
+
+(* Operators by precedence (highest to lowest):                               *)
+(*   1. not, - (unary)                                                        *)
+(*   2. *, /, %                                                               *)
+(*   3. +, -                                                                  *)
+(*   4. <, >, <=, >=                                                          *)
+(*   5. ==, ~=                                                                *)
+(*   6. and                                                                   *)
+(*   7. or                                                                    *)
+
+comparison_operator = "<" | ">" | "<=" | ">=" ;
+
+equality_operator = "==" | "~=" ;
+
+additive_operator = "+" | "-" ;
+
+multiplicative_operator = "*" | "/" | "%" ;
+
+logical_operator = "and" | "or" ;
+
+unary_operator = "not" | "-" ;
+
+string_operator = ".." ;
+
+
+(* ========================================================================== *)
+(* 15. STRING CONCATENATION                                                   *)
+(* ========================================================================== *)
+
+(* String concatenation extends additive expressions *)
+
+concatenation_expression = additive_expression ,
+                           { ".." , additive_expression } ;
+
+
+(* ========================================================================== *)
+(* 16. SPECIAL CONSTRUCTS                                                     *)
+(* ========================================================================== *)
+
+(* Plain text is any character sequence not starting a special construct *)
+
+plain_text = { plain_char } ;
+
+plain_char = any_char - ( "$" | "{" | "}" | "[" | "]" | "\" | newline ) ;
+
+(* Any character in the input *)
+
+any_char = ? any Unicode character ? ;
+
+
+(* ========================================================================== *)
+(* 17. COMPLETE PRODUCTION SUMMARY                                            *)
+(* ========================================================================== *)
+
+(*
+  Top-level:
+    story -> story_header? vars_block? passage*
+
+  Passage:
+    passage -> passage_header passage_directives? passage_body
+    passage_body -> passage_element* choice_block?
+
+  Content:
+    content_element -> plain_text | interpolation | conditional | alternative
+
+  Expressions:
+    expression -> or_expression (precedence climbing)
+
+  Choices:
+    choice -> marker condition? text action? target
+
+  Control Flow:
+    conditional_block -> { expr } content {elif}* {else}? {/}
+    inline_conditional -> {expr: true | false}
+    text_alternative -> {[prefix]| opt1 | opt2 | ... }
+*)
+
+
+(* ========================================================================== *)
+(* END OF GRAMMAR                                                             *)
+(* ========================================================================== *)

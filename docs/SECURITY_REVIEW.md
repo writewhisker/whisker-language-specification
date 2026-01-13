@@ -1,4 +1,4 @@
-# WLS 1.0 Security Review
+# WLS Security Review
 
 **Date:** 2025-12-30
 **Updated:** 2025-12-30

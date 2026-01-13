@@ -1,4 +1,4 @@
-# WLS 1.0 Examples
+# WLS Examples
 
 This directory contains canonical example files demonstrating the Whisker Language Specification 1.0 text format. These examples serve as the authoritative reference for both whisker-core (Lua) and whisker-editor-web (TypeScript) implementations.
 
@@ -37,6 +37,14 @@ examples/
 | `advanced/10-enchanted-library.ws` | Story-level features, achievements, and scoring |
 | `advanced/11-assets-gallery.ws` | Asset management with images, audio, and video |
 | `advanced/12-cave-adventure.ws` | Shop pattern, inventory, and combat mechanics |
+| `advanced/13-lists.ws` | List data structure usage |
+| `advanced/14-arrays.ws` | Array operations and patterns |
+| `advanced/15-maps.ws` | Map/dictionary data structures |
+| `advanced/16-modules.ws` | Module system usage |
+| `advanced/17-rich-text.ws` | Rich text formatting |
+| `advanced/18-styling.ws` | CSS styling integration |
+| `advanced/19-media.ws` | Media embedding |
+| `advanced/20-theming.ws` | Theme customization |
 
 ## Quick Reference
 
@@ -104,14 +112,14 @@ ${gold * 2} is double.
 
 ## Running Examples
 
-These examples can be run with any WLS 1.0 compatible player:
+These examples can be run with any WLS compatible player:
 
 1. **whisker-core** (Lua): Parse and play stories in Lua environments
 2. **whisker-editor-web**: Edit and preview stories in the browser
 
 ## File Format
 
-WLS 1.0 text files use the `.ws` extension and are UTF-8 encoded plain text.
+WLS text files use the `.ws` extension and are UTF-8 encoded plain text.
 
 ## Conformance Testing
 

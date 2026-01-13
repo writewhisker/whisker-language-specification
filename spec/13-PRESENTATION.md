@@ -1,10 +1,10 @@
 # Chapter 13: Presentation Layer
 
-This chapter specifies WLS 1.0's presentation features including rich text formatting, CSS classes for styling, media embedding, and theming.
+This chapter specifies WLS's presentation features including rich text formatting, CSS classes for styling, media embedding, and theming.
 
 ## 13.1 Rich Text (Markdown Subset)
 
-WLS 1.0 supports a carefully selected subset of Markdown for rich text formatting. This subset is designed to be easy to write, unambiguous to parse, and suitable for interactive fiction.
+WLS supports a carefully selected subset of Markdown for rich text formatting. This subset is designed to be easy to write, unambiguous to parse, and suitable for interactive fiction.
 
 ### 13.1.1 Inline Formatting
 
@@ -119,7 +119,7 @@ The following Markdown features are intentionally NOT supported to keep the lang
 
 ## 13.2 CSS Classes for Styling
 
-WLS 1.0 provides a CSS class system for applying custom styles to content without embedding raw CSS.
+WLS provides a CSS class system for applying custom styles to content without embedding raw CSS.
 
 ### 13.2.1 Block-Level Classes
 
@@ -197,7 +197,7 @@ The following class names have predefined meanings:
 
 ## 13.3 Media Embedding
 
-WLS 1.0 supports embedding images, audio, video, and external content.
+WLS supports embedding images, audio, video, and external content.
 
 ### 13.3.1 Images
 
@@ -315,7 +315,7 @@ Absolute URLs are also supported:
 
 ## 13.4 Theming System
 
-WLS 1.0 includes a theming system for consistent visual styling.
+WLS includes a theming system for consistent visual styling.
 
 ### 13.4.1 THEME Directive
 

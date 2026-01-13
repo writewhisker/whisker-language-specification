@@ -1,8 +1,8 @@
 @title: CSS Styling Demo
-@author: WLS 1.0
+@author: WLS
 @version: 1.0.0
 
--- WLS 1.0 Gap 5: CSS Classes Demo
+-- WLS Gap 5: CSS Classes Demo
 -- This story demonstrates CSS class styling
 
 :: Start
@@ -10,7 +10,7 @@
 # Styling with CSS Classes
 
 .info {
-This passage demonstrates the CSS class system in WLS 1.0.
+This passage demonstrates the CSS class system in WLS.
 Classes allow you to style content without inline CSS.
 }
 

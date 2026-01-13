@@ -6,7 +6,7 @@
 
 ## 2.1 Overview
 
-This chapter defines the fundamental concepts that form the foundation of WLS 1.0. Understanding these concepts is essential for both authors and implementers.
+This chapter defines the fundamental concepts that form the foundation of WLS. Understanding these concepts is essential for both authors and implementers.
 
 The core concepts are:
 
@@ -304,7 +304,7 @@ Implementations MAY provide configuration for this behavior.
 
 ### 2.5.2 Variable Types
 
-WLS 1.0 supports three primitive types:
+WLS supports three primitive types:
 
 | Type | Description | Examples |
 |------|-------------|----------|

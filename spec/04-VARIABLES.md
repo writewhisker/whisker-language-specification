@@ -6,7 +6,7 @@
 
 ## 4.1 Overview
 
-Variables store and track state throughout a story. WLS 1.0 provides a simple but powerful variable system with two scopes, three types, and flexible interpolation.
+Variables store and track state throughout a story. WLS provides a simple but powerful variable system with two scopes, three types, and flexible interpolation.
 
 ## 4.2 Variable Declaration
 
@@ -369,7 +369,7 @@ You have $gold gold.     // OK: "You have 0 gold."
 
 ### 4.6.4 Variable Deletion
 
-Variables cannot be deleted in WLS 1.0. To "clear" a variable, set it to a default value:
+Variables cannot be deleted in WLS. To "clear" a variable, set it to a default value:
 
 ```whisker
 $gold = 0                // "Clear" to zero
@@ -381,7 +381,7 @@ $hasKey = false          // "Clear" to false
 
 ### 4.7.1 Explicit Coercion
 
-WLS 1.0 does NOT perform implicit type coercion. Type mismatches produce errors:
+WLS does NOT perform implicit type coercion. Type mismatches produce errors:
 
 ```whisker
 $num = 42
@@ -480,7 +480,7 @@ These are NOT variables but function calls.
 
 ### 4.9.2 No Magic Variables
 
-WLS 1.0 does not define any magic or automatic variables. All state tracking is explicit:
+WLS does not define any magic or automatic variables. All state tracking is explicit:
 
 ```whisker
 // Track visits manually if needed

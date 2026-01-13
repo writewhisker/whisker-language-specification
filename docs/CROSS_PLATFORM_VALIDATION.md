@@ -1,4 +1,4 @@
-# WLS 1.0 Cross-Platform Validation Report
+# WLS Cross-Platform Validation Report
 
 **Date:** 2025-12-31
 **Test Corpus Version:** 1.0.0
@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-Cross-platform testing reveals both implementations parse WLS 1.0 syntax successfully, with differences primarily in API execution (not parsing) and edge case handling.
+Cross-platform testing reveals both implementations parse WLS syntax successfully, with differences primarily in API execution (not parsing) and edge case handling.
 
 | Platform | Passed | Failed | Pass Rate |
 |----------|--------|--------|-----------|
 | whisker-core (Lua) | 210 | 40 | 84.0% |
 | whisker-editor-web (TypeScript) | 190 | 60 | 76.0% |
 
-**Key Finding:** The 8% difference is primarily due to API execution tests (24/25 difference), not parsing differences. Both parsers handle core WLS 1.0 syntax identically.
+**Key Finding:** The 8% difference is primarily due to API execution tests (24/25 difference), not parsing differences. Both parsers handle core WLS syntax identically.
 
 ## Results by Category
 
@@ -43,7 +43,7 @@ whisker-core fails several choice action tests:
 - `choice-action-multiple`: "Choice missing target"
 - `choice-action-set-variable`: "Choice missing target"
 
-**Cause:** whisker-core's parser is stricter about the WLS 1.0 choice syntax `+ [text] -> Target @ action` and rejects some forms that whisker-editor-web accepts.
+**Cause:** whisker-core's parser is stricter about the WLS choice syntax `+ [text] -> Target @ action` and rejects some forms that whisker-editor-web accepts.
 
 ### 3. Parser Hangs in whisker-core
 
@@ -81,7 +81,7 @@ Common failures:
 ### For whisker-core
 
 1. **Fix parser hangs** - Handle invalid token patterns gracefully without infinite loops
-2. **Improve choice parsing** - Accept WLS 1.0 action syntax consistently
+2. **Improve choice parsing** - Accept WLS action syntax consistently
 
 ### For whisker-editor-web
 
@@ -103,7 +103,7 @@ Common failures:
 
 ## Conclusion
 
-Both implementations successfully parse WLS 1.0 syntax with **identical results on core syntax tests** (syntax, variables, conditionals, edge-cases). Differences are primarily in:
+Both implementations successfully parse WLS syntax with **identical results on core syntax tests** (syntax, variables, conditionals, edge-cases). Differences are primarily in:
 
 1. **API execution** (expected - whisker-editor-web is parser-only)
 2. **Semantic validation** (not required by spec for parsers)
