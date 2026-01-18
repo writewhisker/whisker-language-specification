@@ -265,7 +265,98 @@ whisker.version()
 -- Returns: { major = 1, minor = 0, patch = 0, string = "1.0.0" }
 ```
 
-## 1.11 Acknowledgments
+## 1.11 Quick Start Tutorial
+
+This 5-minute tutorial gets you writing your first Whisker story.
+
+### 1.11.1 Hello World
+
+Create a file called `hello.ws`:
+
+```whisker
+:: Start
+Hello, World!
+
++ [Continue] -> Goodbye
+
+:: Goodbye
+Thanks for playing!
+-> END
+```
+
+This minimal story has two passages and one choice.
+
+### 1.11.2 Adding Variables
+
+```whisker
+:: Start
+$playerName = "Hero"
+$gold = 100
+
+Welcome, $playerName! You have $gold gold.
+
++ [Check inventory] -> Inventory
++ [Go adventuring] -> Adventure
+
+:: Inventory
+You have $gold gold pieces.
++ [Back] -> Start
+
+:: Adventure
+You found a treasure chest!
+$gold += 50
+Now you have $gold gold!
++ [Continue] -> Start
+```
+
+### 1.11.3 Adding Conditions
+
+```whisker
+:: Shop
+@tags: commerce
+
+$hasSword = false
+
+Welcome to the shop!
+
+{$gold >= 50}
+  * {not $hasSword} [Buy sword - 50g] {$gold -= 50; $hasSword = true} -> Shop
+{/}
+
+{$gold < 50}
+  You don't have enough gold for anything here.
+{/}
+
++ [Leave] -> Town
+```
+
+### 1.11.4 Using Alternatives
+
+```whisker
+:: Tavern
+The bartender {| nods at you | waves | ignores you }.
+
+"What'll it be?" {&| he asks | she asks | they ask }.
+
+{~| A bard plays softly. | Dice clatter in the corner. | Someone laughs loudly. }
+
++ [Order a drink] -> Order
++ [Leave] -> Town
+```
+
+### 1.11.5 Next Steps
+
+You now know the basics:
+- **Passages**: `:: Name` defines content blocks
+- **Choices**: `+` for once-only, `*` for sticky
+- **Variables**: `$name` for story-wide, `_name` for temporary
+- **Conditions**: `{expr}...{/}` for conditional content
+- **Alternatives**: `{| a | b | c }` for dynamic text
+- **Navigation**: `-> Target` moves between passages
+
+See [Chapter 9: Examples](09-EXAMPLES.md) for complete story examples.
+
+## 1.12 Acknowledgments
 
 WLS draws inspiration from:
 

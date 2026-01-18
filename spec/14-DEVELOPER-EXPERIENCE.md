@@ -683,3 +683,238 @@ The WLS test corpus includes platform validation tests:
 - input: "{{ string.len('日本語') }}"
   expected: "9"  # Byte length, not character count
 ```
+
+## 14.10 Snippet Templates
+
+### 14.10.1 VS Code Snippets
+
+Recommended snippets for rapid development:
+
+```json
+{
+  "Passage": {
+    "prefix": "pass",
+    "body": [
+      ":: ${1:PassageName}",
+      "${2:Content}",
+      "",
+      "+ [${3:Choice}] -> ${4:Target}"
+    ],
+    "description": "Create a new passage"
+  },
+  "Conditional Block": {
+    "prefix": "if",
+    "body": [
+      "{\\$${1:condition}}",
+      "  ${2:content}",
+      "{/}"
+    ],
+    "description": "Conditional block"
+  },
+  "Choice Once": {
+    "prefix": "cho",
+    "body": "+ [${1:text}] -> ${2:Target}",
+    "description": "Once-only choice"
+  },
+  "Choice Sticky": {
+    "prefix": "chs",
+    "body": "* [${1:text}] -> ${2:Target}",
+    "description": "Sticky choice"
+  },
+  "Guarded Choice": {
+    "prefix": "chg",
+    "body": "+ {\\$${1:condition}} [${2:text}] -> ${3:Target}",
+    "description": "Guarded choice"
+  },
+  "Alternative Sequence": {
+    "prefix": "alt",
+    "body": "{| ${1:first} | ${2:second} | ${3:third} }",
+    "description": "Sequence alternative"
+  },
+  "Alternative Cycle": {
+    "prefix": "altc",
+    "body": "{&| ${1:first} | ${2:second} | ${3:third} }",
+    "description": "Cycle alternative"
+  },
+  "Tunnel": {
+    "prefix": "tun",
+    "body": "->-> ${1:PassageName}",
+    "description": "Tunnel to passage"
+  },
+  "Lua Block": {
+    "prefix": "lua",
+    "body": [
+      "{{",
+      "  ${1:code}",
+      "}}"
+    ],
+    "description": "Lua code block"
+  }
+}
+```
+
+### 14.10.2 Emmet-Style Abbreviations
+
+Some editors support Emmet-style expansion:
+
+| Abbreviation | Expansion |
+|--------------|-----------|
+| `::n` | `:: NewPassage` |
+| `+>` | `+ [] -> Target` |
+| `*>` | `* [] -> Target` |
+| `{?}` | `{$condition}{/}` |
+| `{a\|b\|c}` | `{\| a \| b \| c }` |
+
+## 14.11 Code Formatting
+
+### 14.11.1 Formatting Rules
+
+Implementations SHOULD provide auto-formatting:
+
+| Rule | Before | After |
+|------|--------|-------|
+| Passage spacing | `:: A\n:: B` | `:: A\n\n:: B` |
+| Choice alignment | Inconsistent | Aligned |
+| Indentation | Mixed | Consistent (2 spaces) |
+| Trailing whitespace | `text   ` | `text` |
+| Final newline | None | Single newline |
+
+### 14.11.2 Formatting Options
+
+```json
+{
+  "whisker.format.indentSize": 2,
+  "whisker.format.insertFinalNewline": true,
+  "whisker.format.trimTrailingWhitespace": true,
+  "whisker.format.passageSpacing": "double",
+  "whisker.format.alignChoices": false,
+  "whisker.format.wrapLineLength": 80
+}
+```
+
+### 14.11.3 Non-Formatted Regions
+
+Formatting MUST preserve:
+- String literal content
+- Raw strings
+- Comment content
+- Lua block formatting
+- Passage prose whitespace
+
+## 14.12 Refactoring Support
+
+### 14.12.1 Rename Symbol
+
+LSP `textDocument/rename` for:
+
+| Symbol Type | Behavior |
+|-------------|----------|
+| Passage | Updates all `->` references |
+| Variable | Updates all `$var` uses |
+| Function | Updates all calls |
+
+### 14.12.2 Extract Passage
+
+Extract selection into new passage:
+
+**Before:**
+```whisker
+:: Main
+Long content here.
+Even more content.
++ [Continue] -> Next
+```
+
+**After:**
+```whisker
+:: Main
+->-> ExtractedContent
++ [Continue] -> Next
+
+:: ExtractedContent
+Long content here.
+Even more content.
+->->
+```
+
+### 14.12.3 Inline Passage
+
+Inverse of extract - inline tunnel content:
+
+**Before:**
+```whisker
+:: Main
+->-> Helper
+
+:: Helper
+Helper content.
+->->
+```
+
+**After:**
+```whisker
+:: Main
+Helper content.
+```
+
+### 14.12.4 Convert Choice Type
+
+Toggle between once-only and sticky:
+
+| Command | Transformation |
+|---------|----------------|
+| Make sticky | `+` → `*` |
+| Make once-only | `*` → `+` |
+
+## 14.13 Testing Integration
+
+### 14.13.1 Test Runner
+
+Implementations SHOULD support test execution:
+
+```json
+// .whisker-test.json
+{
+  "tests": [
+    {
+      "name": "Start passage exists",
+      "type": "unit",
+      "passage": "Start",
+      "assert": "exists"
+    },
+    {
+      "name": "Gold initializes to 100",
+      "type": "unit",
+      "setup": ":: Test\n$gold = 100",
+      "assert": { "variable": "gold", "equals": 100 }
+    },
+    {
+      "name": "Can reach ending",
+      "type": "path",
+      "from": "Start",
+      "to": "END",
+      "assert": "reachable"
+    }
+  ]
+}
+```
+
+### 14.13.2 Test Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `unit` | Single passage/variable test | Assert variable value |
+| `path` | Navigation path test | Assert passage reachable |
+| `coverage` | Coverage analysis | Assert all passages visited |
+| `snapshot` | Output comparison | Assert rendered text |
+
+### 14.13.3 Test Discovery
+
+Implementations SHOULD discover tests from:
+- `.whisker-test.json` files
+- `@test` tagged passages
+- `// @test:` comments
+
+---
+
+**Previous Chapter:** [Presentation](13-PRESENTATION.md)

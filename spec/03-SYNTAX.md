@@ -515,6 +515,39 @@ You have {$gold} gold {$gold == 1: piece | pieces}.
 {$isNight: The moon shines. | The sun is bright.}
 ```
 
+### 3.8.3 Brace Construct Disambiguation
+
+The `{` character begins several constructs. Parsers distinguish them by lookahead:
+
+| After `{` | Construct | Example |
+|-----------|-----------|---------|
+| `\|` | Alternative | `{\| a \| b }` |
+| `$`/`_` then `:` then non-`:` | Inline conditional | `{$x: yes \| no}` |
+| `$`/`_` then `=` | Action block | `{$x = 1}` |
+| `@` | Hook operation | `{@show: name}` |
+| identifier `:` value | Map literal | `{key: val}` |
+| expression `}` newline | Conditional block | `{$flag}` |
+
+**Parsing Strategy:**
+
+1. Consume `{`
+2. If next is `|`, parse as alternative
+3. If next is `@`, parse as hook operation
+4. Parse expression/identifier
+5. Lookahead for `:`, `=`, `}`, or `|`
+6. Dispatch based on lookahead
+
+**Maximum Lookahead:** 3 tokens
+
+**Examples:**
+```whisker
+{| a | b }              // Alternative (starts with |)
+{$flag}                 // Conditional (variable + })
+{$x: yes | no}          // Inline conditional (variable + :)
+{$gold += 50}           // Action block (variable + =)
+{key: "value"}          // Map literal (identifier + :)
+```
+
 ## 3.9 Text Alternatives
 
 ### 3.9.1 Syntax
