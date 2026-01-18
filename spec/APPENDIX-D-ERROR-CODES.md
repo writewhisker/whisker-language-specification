@@ -1,4 +1,8 @@
-# Appendix A: Error Codes Reference
+# Appendix D: Error Codes
+
+**Whisker Language Specification 1.0**
+
+---
 
 This appendix provides a comprehensive reference for all WLS error codes.
 
@@ -733,3 +737,8 @@ WLS-LNK-001: Choice links to non-existent passage at line 5, column 8
 Suggestion: Did you mean "Shop"?
 See: https://wls.whisker.dev/errors/WLS-LNK-001
 ```
+
+---
+
+**Previous Appendix:** [Escape Sequences](APPENDIX-C-ESCAPE-SEQUENCES.md)
+**Next Appendix:** [Migration](APPENDIX-E-MIGRATION.md)

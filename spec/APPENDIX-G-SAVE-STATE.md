@@ -1,8 +1,12 @@
-# Appendix B: Save State Schema
+# Appendix G: Save State Schema
+
+**Whisker Language Specification 1.0**
+
+---
 
 This appendix defines the standard JSON format for WLS save states, enabling portable saves across implementations.
 
-## B.1 Overview
+## G.1 Overview
 
 Save states capture the complete runtime state of a story at a specific moment, allowing:
 - Save/load functionality
@@ -10,7 +14,7 @@ Save states capture the complete runtime state of a story at a specific moment, 
 - Debugging and testing
 - Analytics and telemetry
 
-## B.2 JSON Schema
+## G.2 JSON Schema
 
 ```json
 {
@@ -95,7 +99,7 @@ Save states capture the complete runtime state of a story at a specific moment, 
 }
 ```
 
-## B.3 Example Save State
+## G.3 Example Save State
 
 ```json
 {
@@ -145,9 +149,9 @@ Save states capture the complete runtime state of a story at a specific moment, 
 }
 ```
 
-## B.4 Field Specifications
+## G.4 Field Specifications
 
-### B.4.1 Required Fields
+### G.4.1 Required Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -155,7 +159,7 @@ Save states capture the complete runtime state of a story at a specific moment, 
 | `current_passage` | string | Passage name where player is located |
 | `variables` | object | All story-scoped variables |
 
-### B.4.2 Optional Fields
+### G.4.2 Optional Fields
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -169,7 +173,7 @@ Save states capture the complete runtime state of a story at a specific moment, 
 | `random_seed` | integer | - | RNG state for replay |
 | `custom` | object | `{}` | Implementation-specific data |
 
-### B.4.3 Variable Serialization
+### G.4.3 Variable Serialization
 
 | WLS Type | JSON Type | Example |
 |----------|-----------|---------|
@@ -181,14 +185,14 @@ Save states capture the complete runtime state of a story at a specific moment, 
 | List | object | `{"_type": "list", "active": ["happy"], "all": ["happy", "sad"]}` |
 | nil | null | `null` |
 
-### B.4.4 Alternative State Keys
+### G.4.4 Alternative State Keys
 
 Alternative state keys follow the format: `PassageName:index` or `PassageName:name`
 
 - Index-based (unnamed): `"Forest:0"` = first alternative in Forest passage
 - Name-based (named): `"Forest:greeting"` = alternative named "greeting"
 
-### B.4.5 Exhausted Choices Keys
+### G.4.5 Exhausted Choices Keys
 
 Keys are passage names; values are arrays of choice indices (0-based):
 
@@ -199,9 +203,9 @@ Keys are passage names; values are arrays of choice indices (0-based):
 }
 ```
 
-## B.5 Save/Load Operations
+## G.5 Save/Load Operations
 
-### B.5.1 Saving
+### G.5.1 Saving
 
 ```lua
 -- Get save state as JSON string
@@ -214,7 +218,7 @@ local saveTable = whisker.save.toTable()
 whisker.save.save("slot1")
 ```
 
-### B.5.2 Loading
+### G.5.2 Loading
 
 ```lua
 -- Load from JSON string
@@ -227,7 +231,7 @@ whisker.save.fromTable(saveTable)
 whisker.save.load("slot1")
 ```
 
-### B.5.3 Validation
+### G.5.3 Validation
 
 Implementations MUST validate saves before loading:
 
@@ -238,7 +242,7 @@ Implementations MUST validate saves before loading:
 
 Invalid saves SHOULD produce error WLS-SAVE-001 with specific failure reason.
 
-## B.6 Migration
+## G.6 Migration
 
 When loading a save from a different `save_version`:
 
@@ -247,7 +251,7 @@ When loading a save from a different `save_version`:
 3. Log migration actions
 4. Update `save_version` field
 
-### B.6.1 Version 1 → 2 (Example)
+### G.6.1 Version 1 → 2 (Example)
 
 ```lua
 if save.save_version == "1" then
@@ -261,7 +265,7 @@ if save.save_version == "1" then
 end
 ```
 
-## B.7 Implementation Requirements
+## G.7 Implementation Requirements
 
 1. Implementations MUST support JSON save format
 2. Implementations MUST validate saves before loading
@@ -270,9 +274,14 @@ end
 5. Implementations MAY add custom fields in `custom` object
 6. Implementations MUST preserve unknown fields when re-saving
 
-## B.8 Security Considerations
+## G.8 Security Considerations
 
 1. **Input validation**: Sanitize all loaded values
 2. **Size limits**: Reject saves exceeding reasonable size (recommend 1MB)
 3. **Injection prevention**: Don't evaluate save content as code
 4. **Integrity**: Consider checksums for save validation
+
+---
+
+**Previous Appendix:** [Glossary](APPENDIX-F-GLOSSARY.md)
+**Next Appendix:** [Quick Reference](APPENDIX-H-QUICK-REF.md)

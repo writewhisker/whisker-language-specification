@@ -137,4 +137,7 @@ Health: $health
 
 ---
 
-**Full Specification:** See chapters 1-14 for complete details.
+**Previous Appendix:** [Save State](APPENDIX-G-SAVE-STATE.md)
+**Next Appendix:** [TextMate Grammar](APPENDIX-I-TEXTMATE-GRAMMAR.md)
+
+**Full Specification:** See chapters 1-15 for complete details.
