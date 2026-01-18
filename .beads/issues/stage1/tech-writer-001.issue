@@ -1,0 +1,216 @@
+# Technical Writer Evaluation: Whisker Language Specification
+
+**Evaluator**: Technical Writer Persona
+**Date**: 2026-01-17
+**Spec Version**: Git Commit e0479d9
+
+---
+
+## Executive Summary
+
+The Whisker Language Specification (WLS) is a comprehensive technical document that successfully defines an interactive fiction authoring language. From a technical writing perspective, the specification is well-structured for implementers but requires significant adaptation to serve as user documentation. The document excels in formal completeness but needs work on learning pathways and conceptual clarity for authors.
+
+---
+
+## Critical Issues
+
+### ISSUE-TW-001: Version Confusion in Document Headers
+- **Category**: Inconsistency
+- **Severity**: Critical
+- **Location**: Chapter headers throughout (e.g., lines 507-512, 756-758, 1322-1325)
+- **Description**: The document contradicts itself about versioning. The overview states "WLS is unified as simply 'WLS' or 'Whisker Language Specification.' There are no version distinctions (1.0, 2.0, etc.)" (lines 174-175). However, every chapter header reads "Whisker Language Specification 1.0" and the Introduction states "Version: 1.0.0" and "Status: Draft" (lines 508-511). This creates confusion about whether versions exist and the document's finality.
+- **Suggested Fix**: Choose one approach: either remove all "1.0" version references and "Draft" status to match the unified naming claim, OR clearly define version 1.0 as the current stable specification. Update the overview statement accordingly.
+
+### ISSUE-TW-002: Missing Conceptual Onboarding for Authors
+- **Category**: Omission
+- **Severity**: Critical
+- **Location**: Chapter 1 (Introduction) and overall structure
+- **Description**: The specification dives directly into formal definitions without explaining WHAT Whisker is used for from an author's perspective. New users will not understand: What kinds of stories can I write? How is this different from Twine/Ink? What's the typical authoring workflow? The "Quick Start" section (lines 77-109) assumes readers already understand interactive fiction concepts.
+- **Suggested Fix**: Add a "What is Whisker?" section early in Chapter 1 with:
+  - A concrete example story from start to finish (not just code snippets)
+  - Comparison to familiar concepts (web pages, flowcharts, CYOA books)
+  - A simple "Hello World" walkthrough
+  - Target use cases (games, education, training, interactive stories)
+
+---
+
+## Major Concerns
+
+### ISSUE-TW-003: Terminology Inconsistencies
+- **Category**: Inconsistency
+- **Severity**: Major
+- **Location**: Multiple chapters
+- **Description**: Key terms are used inconsistently:
+  - "Story variable" vs "Story-scoped variable" vs "Persistent variable" (Chapter 4)
+  - "Engine" vs "Implementation" vs "Runtime" (used interchangeably)
+  - "Passage" sometimes includes choices, sometimes doesn't
+  - "Block conditional" vs "Conditional block" (both used)
+- **Suggested Fix**: Create a formal glossary in Chapter 1 (current section 1.6 is minimal) and audit the document for consistent usage. Use a single term for each concept.
+
+### ISSUE-TW-004: Feature Introduction Order is Non-Pedagogical
+- **Category**: Usability
+- **Severity**: Major
+- **Location**: Chapter structure (Chapters 1-8)
+- **Description**: The chapter order reflects implementation concerns, not learning progression. Variables (Ch 4) are introduced before users understand what they'd use them for. Control Flow (Ch 5) covers complex features like Gathers and Tunnels before readers have practiced basic conditionals. The Lua API (Ch 7) is introduced before users have written a complete story.
+- **Suggested Fix**: For user documentation, reorganize as:
+  1. First Story (minimal example)
+  2. Passages and Choices (core interaction)
+  3. Adding Variables
+  4. Basic Conditionals
+  5. Text Alternatives
+  6. Advanced: Gathers, Tunnels, Lua
+  Alternatively, create a separate "Tutorial Guide" that introduces concepts progressively.
+
+### ISSUE-TW-005: Complex Features Lack Motivation
+- **Category**: Inadequacy
+- **Severity**: Major
+- **Location**: Sections 5.9 (Gathers), 5.10 (Tunnels), 4.13-4.15 (Lists, Arrays, Maps)
+- **Description**: Advanced features are described technically without explaining WHEN or WHY to use them. For example:
+  - Gathers (5.9): Technical syntax is clear, but when should an author prefer gathers over multiple passages?
+  - Tunnels (5.10): The subroutine analogy is helpful, but real-world use cases are not motivated
+  - Collection types (4.13-4.15): Authors won't know when to use LIST vs ARRAY vs MAP
+- **Suggested Fix**: Add a "When to Use" section for each advanced feature with:
+  - Common scenarios where this feature solves a problem
+  - Comparison to alternative approaches
+  - Decision criteria for choosing between options
+
+### ISSUE-TW-006: Error Codes Reference Scattered
+- **Category**: Usability
+- **Severity**: Major
+- **Location**: Throughout chapters and APPENDIX-A-ERROR-CODES.md (referenced but not included in consolidated spec)
+- **Description**: Error codes are mentioned in multiple chapters (e.g., 4.16, 5.12, 6.10) but the complete reference is in a separate file. Users encountering errors must cross-reference multiple documents. The inline error tables are inconsistent in format and completeness.
+- **Suggested Fix**: Either:
+  1. Consolidate all error codes into a single appendix within the main spec with consistent format, OR
+  2. Keep the separate file but include full cross-references with page/line numbers in the main spec
+
+---
+
+## Minor Issues
+
+### ISSUE-TW-007: Inconsistent Example Formatting
+- **Category**: Inconsistency
+- **Severity**: Minor
+- **Location**: Throughout all chapters
+- **Description**: Code examples use different commenting styles to indicate valid vs invalid code. Some use `// INVALID:` prefix, others use `// Error:`, some show expected output with `> **Result:**`, others use `> **Error:**`. The fenced code block language identifier varies (`whisker`, `lua`, sometimes missing).
+- **Suggested Fix**: Establish and document a consistent convention:
+  - Valid examples: plain code with optional `// comment` explaining behavior
+  - Invalid examples: `// INVALID:` prefix with explanation
+  - Expected output: `> **Output:**` blockquote
+  - Expected errors: `> **Error:**` blockquote with error code
+
+### ISSUE-TW-008: Missing Visual Diagrams
+- **Category**: Inadequacy
+- **Severity**: Minor
+- **Location**: Complex flow sections (5.10 Tunnels, 6.7 Advanced Patterns, 2.6 Execution Model)
+- **Description**: The execution flow diagrams (e.g., lines 1129-1172) use ASCII art which renders poorly in some markdown viewers. Complex concepts like tunnel call stacks, gather point flow, and choice evaluation would benefit from proper diagrams.
+- **Suggested Fix**: Consider adding Mermaid flowchart syntax for key diagrams, or provide separate image files. The ASCII diagrams can remain as fallback.
+
+### ISSUE-TW-009: Escape Sequence Table Incomplete
+- **Category**: Omission
+- **Severity**: Minor
+- **Location**: Section 3.11 (Escape Sequences), lines 1881-1907
+- **Description**: The escape sequence table lists common escapes but doesn't clarify behavior in all contexts. For example: Does `\|` work inside alternatives? Is `\>` needed for arrow characters? What about Unicode escapes?
+- **Suggested Fix**: Expand the table to show:
+  - Which escapes work in which contexts (strings, content, choice text)
+  - Explicitly state that Unicode characters don't need escaping (just use directly)
+  - Add examples for edge cases
+
+### ISSUE-TW-010: EBNF Grammar Not Accessible to Authors
+- **Category**: Usability
+- **Severity**: Minor
+- **Location**: Grammar references throughout, GRAMMAR.ebnf file
+- **Description**: The spec frequently references EBNF grammar notation (e.g., lines 1613-1669, 3.6.2). While essential for implementers, most story authors won't understand EBNF. The grammar serves as a normative reference but not as a learning tool.
+- **Suggested Fix**: For user documentation:
+  - Replace inline EBNF with prose descriptions and examples
+  - Keep full EBNF grammar as a separate appendix for implementers
+  - Add "Syntax at a Glance" summaries using railroad diagrams or simple BNF
+
+### ISSUE-TW-011: RFC 2119 Keywords May Confuse Non-Technical Readers
+- **Category**: Usability
+- **Severity**: Minor
+- **Location**: Section 1.4, used throughout
+- **Description**: Terms like MUST, SHOULD, and MAY are explained in section 1.4 but are implementation-focused. Authors may not understand what these mean for their story-writing. "Implementations MUST support at least 1000 variables" is irrelevant to authors.
+- **Suggested Fix**: For user documentation:
+  - Use plain language ("always do X", "you can optionally do Y")
+  - Reserve RFC 2119 keywords for implementer-focused sections
+  - Add author-focused callouts: "Tip:", "Warning:", "Note:"
+
+### ISSUE-TW-012: Chapter Navigation Links Broken in Consolidated Doc
+- **Category**: Usability
+- **Severity**: Minor
+- **Location**: End of each chapter (e.g., lines 750-751, 1316-1317, 2072-2075)
+- **Description**: Each chapter ends with links like `[Core Concepts](02-CORE_CONCEPTS.md)` which work in the original multi-file structure but not in the consolidated single-file spec. These broken links clutter the consolidated document.
+- **Suggested Fix**: For consolidated version:
+  - Replace file links with section anchors
+  - Or remove navigation links entirely since the document is now continuous
+
+---
+
+## Strengths
+
+### STRENGTH-TW-001: Comprehensive Example Coverage
+- **Location**: Throughout all chapters
+- **Description**: Nearly every feature has working code examples showing both basic and advanced usage. The examples are realistic and demonstrate practical patterns. The progression from simple to complex within each section is well-handled.
+
+### STRENGTH-TW-002: Clear Operator Precedence Documentation
+- **Location**: Section 3.5.6 (lines 1615-1642)
+- **Description**: The operator precedence table is clear, includes associativity information, and provides worked examples showing how precedence affects evaluation. This is exactly what users need when debugging expressions.
+
+### STRENGTH-TW-003: Excellent API Quick Reference
+- **Location**: Section 7.12 (lines 5693-5743)
+- **Description**: The consolidated API quick reference at the end of Chapter 7 provides a scannable summary of all Lua API functions. This is ideal for users who have learned the concepts and need a reminder of function signatures.
+
+### STRENGTH-TW-004: Thoughtful Design Philosophy Section
+- **Location**: Sections 1.3 and 2.2 (lines 543-598, 775-846)
+- **Description**: The "Prose First" and "Progressive Complexity" principles are clearly articulated and demonstrated. This helps users understand the language's intent and guides their authoring decisions.
+
+### STRENGTH-TW-005: Robust Error Handling Guidance
+- **Location**: Sections 2.9, 5.7, 6.10, 7.10
+- **Description**: Each major chapter includes an error handling section with common errors, their causes, and resolution strategies. The error message examples show what implementations should report, helping users interpret feedback.
+
+### STRENGTH-TW-006: Consistent Table Formatting
+- **Location**: Throughout all chapters
+- **Description**: Technical information is consistently organized into well-formatted markdown tables. Property/type/description tables for API functions, comparison tables for features, and summary tables for syntax are all easy to scan.
+
+---
+
+## Recommendations for User Documentation
+
+### Priority 1: Create Separate Tutorial Guide
+Extract and expand the examples into a step-by-step tutorial that takes users from "never seen Whisker" to "can write a complete story." This should NOT be a specification but a friendly guide.
+
+### Priority 2: Add Conceptual Overview
+Before diving into syntax, explain: What can I build? Who is this for? What does a finished story look like? Show the forest before the trees.
+
+### Priority 3: Resolve Version/Status Confusion
+Pick a clear stance on versioning and document status. "WLS 1.0 Final" or "WLS (no versions)" - either works, but mixed messages don't.
+
+### Priority 4: Create Feature Decision Guide
+Add a "Choosing the Right Feature" section that helps authors decide between:
+- Passages vs Gathers for branching
+- Variables vs Lists vs Arrays for tracking
+- Block vs Inline conditionals
+- Tunnels vs regular passages for reuse
+
+### Priority 5: Improve Glossary
+Expand section 1.6 into a comprehensive glossary with:
+- Consistent term definitions
+- Cross-references to detailed sections
+- Examples of each term in context
+
+---
+
+## Conclusion
+
+The Whisker Language Specification is technically complete and well-organized for its primary audience of implementers. However, transforming it into effective user documentation will require significant restructuring and supplementary content. The specification's strengths - comprehensive examples, clear tables, and thoughtful philosophy - provide an excellent foundation for creating author-focused documentation.
+
+**Overall Assessment**: The specification CAN be turned into user documentation, but it requires:
+- A companion tutorial guide (new content)
+- Reorganization for learning progression
+- Resolution of internal inconsistencies
+- Additional conceptual framing for non-technical readers
+
+---
+
+*Evaluation completed by Technical Writer Persona*
+*Generated: 2026-01-17*
