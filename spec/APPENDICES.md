@@ -255,17 +255,105 @@ Error [E001] at line 5, column 4:
 /passages\./g            → whisker.passage.
 ```
 
-### E.3 Migration Checklist
+### E.3 From Ink
+
+| Ink | WLS | Notes |
+|-----|-----|-------|
+| `=== knot_name ===` | `:: KnotName` | Passage marker |
+| `= stitch_name` | `:: KnotName_StitchName` | Flatten stitches |
+| `* [Choice text]` | `+ [Choice text] -> Target` | Explicit target required |
+| `+ [Sticky choice]` | `* [Sticky choice] -> Target` | Opposite markers |
+| `-> target` | `-> Target` | Same syntax |
+| `-> DONE` | `-> END` | Different keyword |
+| `{variable}` | `$variable` | Variable syntax |
+| `{condition: text}` | `{$condition}text{/}` | Block conditional |
+| `~ variable = value` | `$variable = value` | Assignment |
+| `VAR name = value` | `$name = value` | Declaration |
+| `INCLUDE file.ink` | `@include: file.ws` | Include directive |
+| `{~opt1\|opt2\|opt3}` | `{~\| opt1 \| opt2 \| opt3 }` | Shuffle |
+| `{&opt1\|opt2\|opt3}` | `{&\| opt1 \| opt2 \| opt3 }` | Cycle |
+| `{!opt1\|opt2\|opt3}` | `{\!\| opt1 \| opt2 \| opt3 }` | Once-only |
+
+**Key differences:**
+- Ink uses `*` for once-only choices; WLS uses `+`
+- Ink uses `+` for sticky choices; WLS uses `*`
+- WLS requires explicit navigation targets
+- Ink stitches must be flattened to passages
+- WLS uses `$` prefix for all variables
+
+### E.4 From Twine (Harlowe)
+
+| Harlowe | WLS | Notes |
+|---------|-----|-------|
+| `::Passage Name` | `:: PassageName` | Space in marker |
+| `[[Link text->Target]]` | `+ [Link text] -> Target` | Choice syntax |
+| `[[Target]]` | `+ [Target] -> Target` | Simple link |
+| `$variable` | `$variable` | Same |
+| `(set: $var to value)` | `$var = value` | Assignment |
+| `(if: $cond)[text]` | `{$cond}text{/}` | Conditional |
+| `(else:)[text]` | `{else}text{/}` | Else clause |
+| `(elseif: $cond)[text]` | `{elif $cond}text{/}` | Elif clause |
+| `(either: a, b, c)` | `{~\| a \| b \| c }` | Random |
+| `(cycling-link:)` | `{&\| a \| b \| c }` | Cycle |
+| `(display: "Passage")` | `->-> Passage` | Tunnel call |
+| `(print: $var)` | `$var` | Interpolation |
+
+### E.5 From Twine (SugarCube)
+
+| SugarCube | WLS | Notes |
+|-----------|-----|-------|
+| `::Passage Name` | `:: PassageName` | Space in marker |
+| `[[Link->Target]]` | `+ [Link] -> Target` | Choice syntax |
+| `<<set $var to value>>` | `$var = value` | Assignment |
+| `<<if $cond>>` | `{$cond}` | Conditional open |
+| `<</if>>` | `{/}` | Conditional close |
+| `<<else>>` | `{else}` | Else clause |
+| `<<elseif $cond>>` | `{elif $cond}` | Elif clause |
+| `<<include "Passage">>` | `->-> Passage` | Tunnel call |
+| `<<print $var>>` | `$var` | Interpolation |
+| `$var` | `$var` | Same |
+| `<<script>>` | `{{ lua code }}` | Embedded script |
+
+### E.6 From ChoiceScript
+
+| ChoiceScript | WLS | Notes |
+|--------------|-----|-------|
+| `*label name` | `:: Name` | Passage marker |
+| `*choice` | Multiple `+` lines | Choice block |
+| `#Option text` | `+ [Option text] -> Target` | Choice option |
+| `*goto label` | `-> Label` | Navigation |
+| `*goto_scene scene` | `@include` + `->` | Scene navigation |
+| `*set var value` | `$var = value` | Assignment |
+| `*create var value` | `$var = value` | Variable creation |
+| `*if (condition)` | `{$condition}` | Conditional open |
+| `*else` | `{else}` | Else clause |
+| `*elseif (condition)` | `{elif $condition}` | Elif clause |
+| `*finish` | `-> END` | End story |
+| `${var}` | `$var` | Interpolation |
+| `*page_break` | (implementation-specific) | No direct equivalent |
+| `*line_break` | Blank line | Line break |
+| `*gosub label` | `->-> Label` | Subroutine call |
+| `*return` | `->->` (bare) | Return from subroutine |
+
+**Key differences:**
+- ChoiceScript is indentation-based; WLS uses explicit markers
+- ChoiceScript `*choice` blocks must be flattened
+- Stats screens require explicit implementation in WLS
+- Fairmath operations need Lua implementation
+
+### E.7 Migration Checklist
 
 - [ ] Replace C-style operators with Lua-style
 - [ ] Update variable interpolation syntax
 - [ ] Update API namespace calls
 - [ ] Change method calls from colon to dot notation
+- [ ] Flatten nested structures (Ink stitches, CS indentation)
+- [ ] Add explicit navigation targets to all choices
 - [ ] Test all passages for correct behavior
 - [ ] Validate against WLS schema
 - [ ] Run test corpus
 
-### E.4 Breaking Changes Summary
+### E.8 Breaking Changes Summary
 
 | Category | Change | Impact |
 |----------|--------|--------|
@@ -280,27 +368,53 @@ Error [E001] at line 5, column 4:
 
 | Term | Definition |
 |------|------------|
+| **Action Block** | Code in `{...}` after choice text that executes when choice is selected |
 | **Alternative** | Dynamic text that varies based on visit count or randomization |
 | **Author** | A person writing Whisker stories |
+| **BOM** | Byte Order Mark - optional UTF-8 prefix (EF BB BF) that is tolerated but stripped |
 | **Choice** | A player decision point that navigates to a target passage |
+| **Choice Guard** | A condition `{expr}` before choice text that controls visibility |
+| **Compound Assignment** | Operators like `+=`, `-=` that combine operation with assignment |
 | **Condition** | An expression that evaluates to true or false |
-| **Cycle** | An alternative type that loops through options forever |
+| **Conformance** | Whether an implementation correctly follows the WLS specification |
+| **Content** | Narrative text within a passage, rendered to the player |
+| **Cycle** | An alternative type (`{&| }`) that loops through options forever |
+| **Directive** | A metadata declaration starting with `@` (e.g., `@tags:`, `@onEnter:`) |
+| **EBNF** | Extended Backus-Naur Form - notation for specifying grammar |
 | **Engine** | Software that executes Whisker stories |
+| **Escape Sequence** | Backslash-prefixed codes for special characters (e.g., `\n`, `\$`) |
 | **Expression** | A combination of values, variables, and operators that produces a value |
+| **Fallback** | A passage specified with `@fallback:` for when no choices are available |
+| **History** | The stack of previously visited passages |
+| **Hook** | A script that runs on passage entry (`@onEnter`) or exit (`@onExit`) |
 | **IFID** | Interactive Fiction Identifier - a UUID uniquely identifying a story |
 | **Implementation** | A software system that parses and executes WLS stories |
-| **Interpolation** | Inserting variable or expression values into text |
+| **Inline Conditional** | Short-form conditional `{$cond: yes | no}` for inline text |
+| **Interpolation** | Inserting variable or expression values into text using `$var` or `${expr}` |
 | **Literal** | A fixed value written directly in code (number, string, boolean) |
-| **Once-only** | A choice or alternative that disappears after use |
-| **Passage** | A discrete unit of narrative content |
-| **Sequence** | An alternative type that progresses through options and stops at last |
-| **Shuffle** | An alternative type that randomly selects options |
+| **LSP** | Language Server Protocol - standard for IDE language support |
+| **Lua** | The scripting language used for embedded code in `{{ }}` blocks |
+| **Navigation** | Moving from one passage to another using `->` or `->->` |
+| **NFC** | Unicode Normalization Form C (Canonical Composition) |
+| **Once-only Choice** | A choice marked with `+` that disappears after selection |
+| **Passage** | A discrete unit of narrative content, marked with `:: Name` |
+| **Passage Marker** | The `::` prefix that begins a passage definition |
+| **Scope** | The visibility and lifetime of a variable (story or temporary) |
+| **Sequence** | An alternative type (`{| }`) that progresses and stops at last option |
+| **Shadowing** | When a temp variable uses the same name as a story variable (warning) |
+| **Shuffle** | An alternative type (`{~| }`) that randomly selects options |
+| **Special Target** | Reserved navigation targets: `END`, `BACK`, `RESTART` |
 | **State** | The collection of variables tracking story progress |
-| **Sticky** | A choice that remains available after selection |
+| **Sticky Choice** | A choice marked with `*` that remains available after selection |
 | **Story** | A complete interactive narrative |
 | **Story-scoped** | Variables (prefix `$`) that persist across passages |
+| **Tag** | A label attached to passages via `@tags:` for categorization |
 | **Temporary** | Variables (prefix `_`) that exist only in current passage |
+| **Test Oracle** | Expected output for conformance testing |
 | **Truthiness** | How non-boolean values are evaluated in boolean context |
+| **Tunnel** | A navigation pattern (`->->`) that returns to the calling passage |
+| **UTF-8** | The required character encoding for WLS source files |
+| **Visit Count** | The number of times a passage has been entered |
 | **WLS** | Whisker Language Specification |
 
 ---

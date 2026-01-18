@@ -663,6 +663,62 @@ Implementations SHOULD:
 - Allow screen reader compatibility
 - Support alternative input methods
 
+## 6.12 Edge Cases
+
+### 6.12.1 Choice Text Edge Cases
+
+| Scenario | Input | Behavior |
+|----------|-------|----------|
+| Empty text | `+ [] -> Target` | Valid, invisible choice |
+| Whitespace only | `+ [   ] -> Target` | Valid, displays spaces |
+| Very long text | 10000+ characters | Valid, display truncated |
+| Nested brackets | `+ [Say [hello]] -> T` | Error WLS-SYN-050 |
+| Escaped brackets | `+ [Say \[hello\]] -> T` | Valid |
+| Interpolation error | `+ [$undefined] -> T` | Displays empty |
+| Special characters | `+ [<>&"'] -> T` | Valid, escape for HTML |
+
+### 6.12.2 Condition Edge Cases
+
+| Scenario | Input | Behavior |
+|----------|-------|----------|
+| Always false | `+ {false} [Never] -> T` | Never shown |
+| Always true | `+ {true} [Always] -> T` | Always shown |
+| Runtime error | `+ {$x / 0} [Bad] -> T` | Hidden, error logged |
+| Undefined var | `+ {$missing} [Maybe] -> T` | Hidden (nil is falsy) |
+| Side effects | `+ {$x += 1} [Inc] -> T` | Side effect on eval |
+| Complex expr | `+ {$a and $b or $c} [Logic] -> T` | Standard precedence |
+
+### 6.12.3 Action Edge Cases
+
+| Scenario | Input | Behavior |
+|----------|-------|----------|
+| Multiple stmts | `+ [Go] {$a = 1; $b = 2} -> T` | Both execute |
+| Navigation in action | `+ [Go] {whisker.passage.go("X")} -> T` | Go to X, skip T |
+| Error in action | `+ [Go] {error()} -> T` | Error, T not reached |
+| Empty action | `+ [Go] {} -> T` | Valid, no-op |
+| Lua exception | `+ [Go] {{ error("fail") }} -> T` | Caught, logged |
+
+### 6.12.4 Target Edge Cases
+
+| Scenario | Input | Behavior |
+|----------|-------|----------|
+| Self-target once | `+ [Again] -> CurrentPassage` | Disappears on select |
+| Self-target sticky | `* [Loop] -> CurrentPassage` | Infinite loop allowed |
+| Target = passage name | `:: END` passage exists | Goes to passage, not special |
+| Dynamic target | Not supported | Use Lua |
+| Tunnel target | `+ [Sub] ->-> Sub` | Valid, returns here |
+| BACK from start | `+ [Back] -> BACK` at start | No-op or error |
+
+### 6.12.5 Order and Priority Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| 100+ choices | Valid, display scrollable |
+| All hidden | Fallback or end |
+| All once-only, all selected | Fallback or end |
+| Duplicate text | Both shown |
+| Same target | Valid, different choices |
+
 ---
 
 **Previous Chapter:** [Control Flow](05-CONTROL_FLOW.md)

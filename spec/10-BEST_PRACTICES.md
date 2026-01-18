@@ -848,6 +848,274 @@ $currentTab = "stats"
 + [Close] ->->
 ```
 
+## 10.13 Dialog System Pattern
+
+### 10.13.1 Basic NPC Conversation
+
+```whisker
+$npcName = ""
+$talkTopics = []
+
+:: TalkTo
+@tags: dialog-system
+
+// Dialog header
+{$npcName ~= ""}
+  **Talking to $npcName**
+{/}
+
+// Dynamic topic menu
++ {$talkTopics ? "greet"} [Greet them] ->-> TopicGreet
++ {$talkTopics ? "rumors"} [Ask about rumors] ->-> TopicRumors
++ {$talkTopics ? "quest"} [Ask about the quest] ->-> TopicQuest
++ [End conversation] -> EndDialog
+```
+
+### 10.13.2 Dialog with Memory
+
+```whisker
+:: Merchant
+$npcName = "Marcus the Merchant"
+$marcus_metBefore = $marcus_metBefore or false
+
+{not $marcus_metBefore}
+  "Welcome, stranger! I haven't seen you before."
+  {$marcus_metBefore = true}
+{else}
+  "Ah, welcome back!"
+{/}
+
++ [What do you sell?] ->-> MarcusShop
++ {$marcus_heardRumor} [About that rumor...] ->-> MarcusRumorFollowup
++ [Goodbye] -> Marketplace
+```
+
+### 10.13.3 Mood-Affected Dialog
+
+```whisker
+:: TalkToGuard
+$guard_mood = $guard_mood or 0  // -100 to 100
+
+{$guard_mood < -50}
+  The guard glares at you. "What do YOU want?"
+{elif $guard_mood < 0}
+  The guard eyes you suspiciously.
+{elif $guard_mood < 50}
+  The guard nods at you neutrally.
+{else}
+  The guard smiles warmly. "Good to see you, friend!"
+{/}
+
++ [Bribe the guard] {$gold -= 10; $guard_mood += 20} -> TalkToGuard
++ {$guard_mood >= 0} [Ask for help] ->-> GuardHelp
++ [Insult the guard] {$guard_mood -= 30} -> TalkToGuard
++ [Leave] -> CastleGate
+```
+
+## 10.14 Relationship Tracking
+
+### 10.14.1 Simple Relationship Values
+
+```whisker
+@vars
+  rel_alice: 0     // -100 (enemy) to 100 (lover)
+  rel_bob: 0
+  rel_carol: 0
+
+:: CheckRelationship
+FUNCTION relationshipLabel(value)
+  {{
+    if value >= 75 then return "Best Friend"
+    elseif value >= 50 then return "Friend"
+    elseif value >= 25 then return "Acquaintance"
+    elseif value >= 0 then return "Neutral"
+    elseif value >= -25 then return "Unfriendly"
+    elseif value >= -50 then return "Hostile"
+    else return "Enemy"
+    end
+  }}
+END
+
+Alice: {{ relationshipLabel($rel_alice) }}
+```
+
+### 10.14.2 Relationship Events
+
+```whisker
+:: HelpAlice
+You help Alice carry her packages.
+{$rel_alice += 10}
+{$rel_alice > 50}
+  She beams at you. "You're such a great friend!"
+{else}
+  "Thanks for the help."
+{/}
+-> Town
+
+:: StealFromAlice
+You pocket some of her coins when she's not looking.
+{$rel_alice -= 25}
+{$gold += 20}
+{$rel_alice < -50}
+  She notices immediately. "Thief! Guards!"
+  -> Arrest
+{/}
+-> Town
+```
+
+### 10.14.3 Faction System
+
+```whisker
+@vars
+  faction_crown: 50
+  faction_rebels: 50
+  faction_merchants: 50
+
+:: FactionChoice
+The king asks you to raid the merchant guild.
+
++ [Obey the king] {$faction_crown += 20; $faction_merchants -= 30} -> RaidMerchants
++ [Refuse] {$faction_crown -= 10} -> RefuseKing
++ {$faction_rebels >= 30} [Report to rebels] {$faction_rebels += 25; $faction_crown -= 20} -> WarnRebels
+
+:: FactionLocked
+// Doors open based on faction standing
++ {$faction_crown >= 75} [Enter the palace (Crown ally)] -> Palace
++ {$faction_rebels >= 75} [Enter the hideout (Rebel ally)] -> RebelBase
++ {$faction_merchants >= 75} [Enter the vault (Merchant ally)] -> MerchantVault
+```
+
+## 10.15 Achievement System
+
+### 10.15.1 Simple Achievements
+
+```whisker
+@vars
+  ach_firstBlood: false
+  ach_pacifist: true
+  ach_millionaire: false
+
+:: AchievementCheck
+FUNCTION checkAchievements()
+  {{
+    if whisker.state.get("gold") >= 1000000 and not whisker.state.get("ach_millionaire") then
+      whisker.state.set("ach_millionaire", true)
+      whisker.output("ACHIEVEMENT UNLOCKED: Millionaire!")
+    end
+  }}
+END
+
+:: Combat
+You defeat the enemy!
+{not $ach_firstBlood}
+  {$ach_firstBlood = true}
+  **ACHIEVEMENT UNLOCKED: First Blood**
+{/}
+{$ach_pacifist = false}  // No longer eligible for pacifist
+-> Victory
+```
+
+### 10.15.2 Achievement Display
+
+```whisker
+LIST achievements = FirstBlood, Pacifist, Millionaire, Explorer, Completionist
+
+:: AchievementScreen
+@tags: system
+
+**Achievements**
+
+{achievements ? FirstBlood and $ach_firstBlood}
+  [X] First Blood - Win your first battle
+{else}
+  [ ] First Blood - Win your first battle
+{/}
+
+{achievements ? Pacifist and $ach_pacifist}
+  [X] Pacifist - Complete the game without violence
+{else}
+  [ ] Pacifist - Complete the game without violence
+{/}
+
+{achievements ? Millionaire and $ach_millionaire}
+  [X] Millionaire - Accumulate 1,000,000 gold
+{else}
+  [ ] Millionaire - Accumulate 1,000,000 gold
+{/}
+
++ [Back] ->->
+```
+
+## 10.16 Checkpoint Pattern
+
+### 10.16.1 Manual Save Points
+
+```whisker
+:: Campfire
+@tags: save-point
+
+You rest by the campfire.
+{$health = $maxHealth}
+The warmth restores your strength.
+
++ [Save game] {whisker.save("checkpoint")} -> CampfireSaved
++ [Continue journey] -> Forest
+
+:: CampfireSaved
+Game saved!
++ [Continue] -> Campfire
+```
+
+### 10.16.2 Auto-Checkpoint
+
+```whisker
+:: ChapterStart
+@tags: chapter-start
+@on-enter: {{whisker.save("auto_chapter_" .. whisker.state.get("chapter"))}}
+
+**Chapter $chapter**
+
+The adventure continues...
+-> ChapterContent
+
+:: LoadCheckpoint
+Which checkpoint would you like to load?
++ {whisker.saveExists("auto_chapter_1")} [Chapter 1] {{whisker.load("auto_chapter_1")}} -> ChapterStart
++ {whisker.saveExists("auto_chapter_2")} [Chapter 2] {{whisker.load("auto_chapter_2")}} -> ChapterStart
++ {whisker.saveExists("auto_chapter_3")} [Chapter 3] {{whisker.load("auto_chapter_3")}} -> ChapterStart
++ [Cancel] -> MainMenu
+```
+
+### 10.16.3 Death and Respawn
+
+```whisker
+$lastCheckpoint = "Start"
+
+:: SetCheckpoint
+FUNCTION saveCheckpoint(passageName)
+  {{
+    whisker.state.set("lastCheckpoint", passageName)
+    whisker.save("checkpoint")
+  }}
+END
+
+:: SafeRoom
+{{ saveCheckpoint("SafeRoom") }}
+You feel safe here. [Checkpoint saved]
++ [Continue] -> Dungeon
+
+:: Death
+You have died.
+
+{$lives > 0}
+  Lives remaining: ${$lives - 1}
+  + [Continue from checkpoint] {$lives -= 1} {{whisker.load("checkpoint")}} -> $lastCheckpoint
+{else}
+  GAME OVER
+  + [Start new game] -> RESTART
+{/}
+```
+
 ---
 
 **Previous Chapter:** [Examples](09-EXAMPLES.md)
