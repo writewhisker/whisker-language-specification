@@ -1,0 +1,222 @@
+# Core Developer Evaluation: Whisker Language Specification
+
+**Evaluator**: Senior Software Engineer (Runtime Implementation Focus)
+**Date**: 2026-01-17
+**Spec Version**: WLS 1.0.0 (Commit e0479d9)
+**Document**: WHISKER_CORE_SPEC.md (268KB consolidated spec)
+
+---
+
+## Executive Summary
+
+The Whisker Language Specification is a comprehensive and well-structured document suitable for implementing an interactive fiction runtime. The specification covers syntax, semantics, Lua API, file formats, and validation with sufficient detail for most implementation tasks. However, several ambiguities and edge cases require clarification before a fully conformant implementation is achievable.
+
+**Implementation Feasibility**: HIGH - Can build a working implementation
+**Specification Completeness**: 85% - Most semantics defined, some gaps
+**Interoperability Risk**: MEDIUM - Edge cases may cause divergent implementations
+
+---
+
+## 1. Critical Issues
+
+### CRIT-001: Temporary Variable Prefix Inconsistency
+
+- **Category**: Inconsistency
+- **Severity**: Critical
+- **Location**: Section 4.3 (Variables), Section 2.5.3, Examples throughout
+- **Description**: The spec uses both `_varName` and `$_varName` syntax for temporary variables inconsistently. Section 2.5.3 shows `_temp = $gold * 2` while Section 5.10.6 (Tunnels with Parameters) shows `$_enemy = "Goblin"`. The EBNF grammar at line 11395 defines `temp_variable = "_" , identifier ;` (without dollar sign), but many examples include the dollar sign.
+- **Suggested Fix**: Standardize on a single syntax. Recommend `_varName` (without dollar) for temp variables to clearly distinguish from story variables (`$varName`). Update all examples and grammar consistently.
+
+### CRIT-002: Version Contradiction in Specification Status
+
+- **Category**: Inconsistency
+- **Severity**: Critical
+- **Location**: WLS_OVERVIEW (line 175) vs Chapter 1 (line 508)
+- **Description**: WLS_OVERVIEW states "This specification is unified as simply 'WLS' or 'Whisker Language Specification.' There are no version distinctions (1.0, 2.0, etc.)" but Chapter 1 is titled "Whisker Language Specification 1.0" with version "1.0.0". This creates confusion about whether the spec is versioned or not, impacting future compatibility decisions.
+- **Suggested Fix**: Clarify the versioning strategy explicitly. Either remove all version numbers and commit to a living document model, or acknowledge 1.0 as the initial version with a clear policy for future versions.
+
+### CRIT-003: Fallback Directive Not Fully Specified
+
+- **Category**: Omission
+- **Severity**: Critical
+- **Location**: Section 2.4.5 (Fallback Behavior), Section 11360 (Passage Directives)
+- **Description**: Section 2.4.5 states the engine "SHOULD" display a message or proceed to a fallback passage when all choices are exhausted, but no mechanism for specifying a per-passage fallback is defined. The `@fallback` directive appears in the grammar (line 11361) but is never documented with its expected behavior, syntax, or default value.
+- **Suggested Fix**: Add a complete section documenting the `@fallback` directive, including syntax (`@fallback: PassageName`), inheritance rules, and default behavior when not specified.
+
+---
+
+## 2. Major Concerns
+
+### MAJ-001: Hook State Persistence Undefined
+
+- **Category**: Omission
+- **Severity**: Major
+- **Location**: Hooks System (line 11721-12207)
+- **Description**: The spec doesn't define whether hook modifications persist across save/load operations. When a story is saved and restored, should hooks retain their modified content, or reset to original values? This is critical for games using hooks for dynamic status displays.
+- **Suggested Fix**: Add a section specifying hook persistence behavior. Define whether hooks are included in save state and if so, what data structure represents them.
+
+### MAJ-002: Text Alternative State Tracking Across Save/Load
+
+- **Category**: Ambiguity
+- **Severity**: Major
+- **Location**: Section 5.8.2 (Implementation Notes for Alternatives)
+- **Description**: The spec says visit count and used indices must be tracked per-alternative, but doesn't specify how this maps to save/load semantics. If a sequence alternative is at position 2 and the user saves, is this position restored? The spec needs explicit state serialization requirements.
+- **Suggested Fix**: Add a dedicated section in Chapter 8 (File Formats) specifying exactly what alternative state must be serialized, with JSON schema examples.
+
+### MAJ-003: Gather Point After Conditional Branch Semantics
+
+- **Category**: Ambiguity
+- **Severity**: Major
+- **Location**: Section 5.9 (Gather Points), Section 5.11.2
+- **Description**: Section 5.11.2 shows a gather point inside a conditional block (`- { $friendliness > 0 }`), but the execution semantics are unclear. Does the gather apply only to choices within that conditional branch? Can choices from multiple conditional branches converge on the same gather? The nesting rules in 5.9.5 don't cover this case.
+- **Suggested Fix**: Add explicit examples showing gather points in combination with conditional blocks, and clarify whether gather points inside conditionals only gather choices within the same conditional scope.
+
+### MAJ-004: Tunnel Return from Nested Conditional
+
+- **Category**: Ambiguity
+- **Severity**: Major
+- **Location**: Section 5.10.5 (Conditional Returns)
+- **Description**: When a tunnel has multiple `<-` return points inside conditionals (as shown in the GuardCheck example), the spec doesn't clarify what happens if no return is executed (all conditions fail) and the passage ends without choices. Does this constitute an error? Does it implicitly return?
+- **Suggested Fix**: Add error code for "tunnel reached end without return" and specify whether this is an error or implicit return.
+
+### MAJ-005: Nested Hook Prohibition Lacks Error Code
+
+- **Category**: Inadequacy
+- **Severity**: Major
+- **Location**: Section 11771 (Hook Rules)
+- **Description**: The spec states "Nested hooks are NOT supported" but provides no error code for this violation. Validators cannot report this error consistently without a defined code.
+- **Suggested Fix**: Add WLS-PRS-XXX error code for "nested_hook_definition" with severity=error.
+
+### MAJ-006: Collection Type Declarations Inconsistent with @vars
+
+- **Category**: Inconsistency
+- **Severity**: Major
+- **Location**: Section 4.13-4.15 (Collections), Section 4.5 (@vars block)
+- **Description**: Collections use capitalized keywords (`LIST moods = ...`, `ARRAY inventory = ...`, `MAP player = {...}`) but the @vars block uses lowercase with different syntax (`gold: 100`). It's unclear if LIST/ARRAY/MAP can appear in @vars blocks or only in passage bodies. The grammar needs clarification.
+- **Suggested Fix**: Unify the syntax or explicitly document where each form is valid. Show @vars blocks containing collection initializations.
+
+### MAJ-007: String Concatenation Precedence Differs from Lua
+
+- **Category**: Inconsistency
+- **Severity**: Major
+- **Location**: Section 3.5.6 (Operator Precedence), line 1623
+- **Description**: The spec places `..` at precedence level 3 with `+` and `-`. In Lua, `..` is right-associative and has its own precedence between additive and comparison operators. This deviation may cause confusion for developers expecting Lua-like behavior and could produce unexpected results with mixed expressions.
+- **Suggested Fix**: Either align with Lua's precedence (making `..` level 3.5 effectively) or explicitly document this as an intentional deviation from Lua with examples of the behavioral difference.
+
+---
+
+## 3. Minor Issues
+
+### MIN-001: Missing Error Code for Tunnel Stack Overflow
+
+- **Category**: Omission
+- **Severity**: Minor
+- **Location**: Section 5.10.4 (Nested Tunnels)
+- **Description**: The spec says implementations "MUST support at least 100 levels" and "SHOULD produce a clear error message" on overflow, but no error code (WLS-FLW-XXX) is defined for this condition.
+- **Suggested Fix**: Add WLS-FLW-012 "tunnel_stack_overflow" with severity=error.
+
+### MIN-002: os.clock Sandboxing Behavior Undefined
+
+- **Category**: Omission
+- **Severity**: Minor
+- **Location**: Section 7.8.3 (Safe os Functions)
+- **Description**: `os.clock` is listed as MAY be provided, but its semantics in a sandboxed environment aren't specified. Should it return actual CPU time or be stubbed? This affects reproducibility across implementations.
+- **Suggested Fix**: Either mandate the function returns a consistent value (like 0) or remove it from the safe list to ensure portability.
+
+### MIN-003: Choice Action vs Embedded Lua Syntax Confusion
+
+- **Category**: Usability
+- **Severity**: Minor
+- **Location**: Section 3.7.3, Section 3.12
+- **Description**: Choice actions use single braces `{ code }` while embedded Lua uses double braces `{{ code }}`. For complex actions, authors may be unsure which syntax to use, and the spec doesn't clearly explain when each is appropriate.
+- **Suggested Fix**: Add a comparison table showing which context uses which syntax, with examples of equivalent behavior.
+
+### MIN-004: INCLUDE Circular Dependency Detection
+
+- **Category**: Omission
+- **Severity**: Minor
+- **Location**: Section 12.2 (Include Directive)
+- **Description**: The spec doesn't specify how implementations should detect or handle circular INCLUDE dependencies (A includes B includes A).
+- **Suggested Fix**: Add WLS-MOD-XXX error code for "circular_include" and specify detection requirements.
+
+### MIN-005: JSON Format Version Mismatch
+
+- **Category**: Inconsistency
+- **Severity**: Minor
+- **Location**: Section 8.7 (Versioning)
+- **Description**: The JSON format has version "2.1" while WLS is "1.0". This dual versioning may confuse implementers about compatibility guarantees.
+- **Suggested Fix**: Clarify the relationship between JSON format version and WLS version. Consider using a single version number or explicitly documenting the matrix.
+
+### MIN-006: Thread API Documentation Incomplete
+
+- **Category**: Inadequacy
+- **Severity**: Minor
+- **Location**: Line 11989-12007 (Thread examples in Hooks)
+- **Description**: `whisker.thread.after` and `whisker.thread.every` are shown in examples but not documented in the main Lua API chapter (Chapter 7).
+- **Suggested Fix**: Add a `whisker.thread` namespace section to Chapter 7 with complete function signatures and lifecycle rules.
+
+### MIN-007: Passage Name Character Set Restriction
+
+- **Category**: Omission
+- **Severity**: Minor
+- **Location**: Section 2.3.2 (Passage Declaration)
+- **Description**: Passage names allow only ASCII letters, digits, and underscores, but the rationale isn't explained. Non-ASCII identifiers would be useful for localization scenarios.
+- **Suggested Fix**: Either expand to allow Unicode letters (following ECMAScript identifier rules) or explicitly document the ASCII-only design decision with rationale.
+
+---
+
+## 4. Strengths
+
+### STR-001: Comprehensive Formal Grammar
+- **Location**: Line 11303-11720
+- **Description**: The 411-line EBNF grammar provides unambiguous parsing rules for the entire language. This is essential for building conformant parsers and enables automated test generation.
+
+### STR-002: Complete Error Code Taxonomy
+- **Location**: Appendix A (line 10565+)
+- **Description**: The 56 error codes across 14 categories with consistent naming (WLS-CAT-NNN) enable standardized validation output across implementations.
+
+### STR-003: Dual Reference Implementations
+- **Location**: Section 1.9
+- **Description**: Having both Lua (whisker-core) and TypeScript (whisker-editor-web) implementations with "identical behavior" claims provides a concrete behavioral specification beyond the text.
+
+### STR-004: Progressive Complexity Design
+- **Location**: Section 1.3.2
+- **Description**: The "Simple stories require simple syntax" principle is well-executed. A minimal story requires only `:: Start` and content, with advanced features opt-in.
+
+### STR-005: Test Corpus
+- **Location**: Section noted as 250+ test cases
+- **Description**: The presence of an extensive test corpus enables conformance testing and provides executable examples of expected behavior.
+
+### STR-006: RFC 2119 Terminology
+- **Location**: Section 1.4
+- **Description**: Consistent use of MUST/SHOULD/MAY enables clear implementation requirements and distinguishes mandatory from optional features.
+
+### STR-007: JSON Schema Availability
+- **Location**: Section 8.6.3
+- **Description**: The `wls.schema.json` file enables automated validation of JSON-format stories, reducing integration friction.
+
+### STR-008: Lua Sandbox Specification
+- **Location**: Section 7.9
+- **Description**: Explicit security constraints (no file I/O, no system access) enable safe execution of untrusted story content.
+
+---
+
+## Implementation Recommendations
+
+1. **Prioritize Grammar-First Parser**: The EBNF grammar is complete; generate parser from grammar rather than hand-coding.
+
+2. **Track Variable Scope Carefully**: The temp vs story variable distinction requires careful scoping, especially with tunnel call stacks.
+
+3. **Implement Validation Phases**: Follow the phased validation approach (structural -> links -> variables -> expressions) for clear error reporting.
+
+4. **Test Against Reference Implementations**: Before claiming conformance, run the test corpus against both whisker-core and whisker-editor-web.
+
+5. **Handle Hooks Separately**: The hooks system is presentation-layer and can be implemented as a separate module from core execution.
+
+---
+
+## Conclusion
+
+The WLS specification is implementation-ready for the core language features. The issues identified above are addressable through specification clarifications rather than fundamental redesign. A conformant implementation is achievable within a reasonable development timeline, provided the critical inconsistencies (particularly CRIT-001 on variable syntax) are resolved before implementation begins.
+
+**Recommendation**: Address CRIT-001 through CRIT-003 before implementation starts. MAJ-001 through MAJ-007 can be resolved during implementation with implementation notes tracking assumptions made.
