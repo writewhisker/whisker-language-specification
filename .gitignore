@@ -19,3 +19,6 @@ Thumbs.db
 # Test artifacts
 *.log
 coverage/
+
+# Beads (local redirect)
+.beads/
