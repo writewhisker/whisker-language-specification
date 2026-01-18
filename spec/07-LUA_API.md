@@ -648,11 +648,169 @@ The Choice object structure:
 | `type` | string | `"once"` or `"sticky"` |
 | `index` | number | Position in choice list |
 
-## 7.7 Top-Level Functions
+## 7.7 whisker.hook
+
+The `whisker.hook` namespace manages named text regions for dynamic content updates.
+
+### 7.7.1 Overview
+
+Hooks are named, modifiable text regions that enable dynamic content updates without page navigation. They bridge the story logic layer and presentation layer.
+
+```whisker
+:: Room
+|description>[The room is dark.]
+
++ [Light torch] {{ whisker.hook.replace("description", "The room is illuminated.") }} -> Room
+```
+
+### 7.7.2 define
+
+```lua
+whisker.hook.define(name: string, content: string, visible?: boolean) -> boolean
+```
+
+Defines a new hook.
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | string | Hook identifier |
+| `content` | string | Initial content |
+| `visible` | boolean | Initial visibility (default: `true`) |
+
+**Returns:** `true` if created, `false` if hook already exists.
+
+### 7.7.3 get
+
+```lua
+whisker.hook.get(name: string) -> string
+```
+
+Retrieves the current content of a hook.
+
+**Returns:** String content, or `""` if hook doesn't exist.
+
+### 7.7.4 replace
+
+```lua
+whisker.hook.replace(name: string, content: string) -> boolean
+```
+
+Replaces the entire content of a hook.
+
+**Returns:** `true` if replaced, `false` if hook doesn't exist.
+
+### 7.7.5 append
+
+```lua
+whisker.hook.append(name: string, content: string) -> boolean
+```
+
+Adds content after the existing hook content.
+
+**Returns:** `true` if appended, `false` if hook doesn't exist.
+
+### 7.7.6 prepend
+
+```lua
+whisker.hook.prepend(name: string, content: string) -> boolean
+```
+
+Adds content before the existing hook content.
+
+**Returns:** `true` if prepended, `false` if hook doesn't exist.
+
+### 7.7.7 show
+
+```lua
+whisker.hook.show(name: string) -> boolean
+```
+
+Makes a hidden hook visible.
+
+**Returns:** `true` if shown, `false` if hook doesn't exist or already visible.
+
+### 7.7.8 hide
+
+```lua
+whisker.hook.hide(name: string) -> boolean
+```
+
+Makes a visible hook invisible (content preserved but not rendered).
+
+**Returns:** `true` if hidden, `false` if hook doesn't exist or already hidden.
+
+### 7.7.9 isVisible
+
+```lua
+whisker.hook.isVisible(name: string) -> boolean
+```
+
+Checks if a hook is currently visible.
+
+**Returns:** `true` if visible, `false` if hidden or doesn't exist.
+
+### 7.7.10 exists
+
+```lua
+whisker.hook.exists(name: string) -> boolean
+```
+
+Checks if a hook is defined.
+
+**Returns:** `true` if hook exists, `false` otherwise.
+
+### 7.7.11 clear
+
+```lua
+whisker.hook.clear(name: string) -> boolean
+```
+
+Removes a hook entirely.
+
+**Returns:** `true` if cleared, `false` if hook doesn't exist.
+
+### 7.7.12 all
+
+```lua
+whisker.hook.all() -> table
+```
+
+Returns all defined hooks.
+
+**Returns:** Table mapping hook names to their state:
+
+```lua
+{
+  description = { content = "The room is dark.", visible = true },
+  secret = { content = "Hidden treasure", visible = false }
+}
+```
+
+### 7.7.13 Directive Syntax
+
+Hooks can also be manipulated via directive syntax in choice actions:
+
+```whisker
++ [Light torch] { @replace: description { The room is illuminated. } } -> Room
++ [Look closer] { @append: description { You see ancient runes. } } -> Room
++ [Hide warning] { @hide: warning } -> Room
++ [Show hint] { @show: hint } -> Room
+```
+
+### 7.7.14 Hook Scope
+
+- Hooks are **passage-scoped** by default
+- Hooks persist across revisits to the same passage
+- Hooks are **not saved** by default (presentation-layer only)
+- To persist hooks, include in save state explicitly
+
+## 7.8 Top-Level Functions
 
 These functions are available directly on the `whisker` namespace.
 
-### 7.7.1 visited
+### 7.8.1 visited
 
 ```lua
 whisker.visited(passage?: string) -> number
@@ -685,7 +843,7 @@ end
 
 **Note:** Visit count increments when entering a passage, before `@onEnter` executes.
 
-### 7.7.2 random
+### 7.8.2 random
 
 ```lua
 whisker.random(min: number, max: number) -> number
@@ -713,7 +871,7 @@ local gold = whisker.random(10, 50)
 whisker.state.set("gold", whisker.state.get("gold") + gold)
 ```
 
-### 7.7.3 pick
+### 7.8.3 pick
 
 ```lua
 whisker.pick(...) -> any
@@ -738,7 +896,7 @@ local enemy = whisker.pick("goblin", "orc", "troll", "dragon")
 whisker.state.set("randomEnemy", enemy)
 ```
 
-### 7.7.4 print
+### 7.8.4 print
 
 ```lua
 whisker.print(...) -> nil
@@ -763,9 +921,9 @@ whisker.print("Entering passage:", whisker.passage.current().id)
 
 **Note:** Output destination is implementation-defined. MAY be suppressed in production.
 
-## 7.8 Lua Standard Library
+## 7.9 Lua Standard Library
 
-### 7.8.1 Available Functions
+### 7.9.1 Available Functions
 
 WLS implementations MUST provide these Lua standard functions:
 
@@ -776,7 +934,7 @@ WLS implementations MUST provide these Lua standard functions:
 | Table | `table.insert`, `table.remove`, `table.concat`, `table.sort` |
 | Math | `math.abs`, `math.ceil`, `math.floor`, `math.max`, `math.min`, `math.random`, `math.randomseed`, `math.sqrt`, `math.pow`, `math.sin`, `math.cos`, `math.tan` |
 
-### 7.8.2 Restricted Functions
+### 7.9.2 Restricted Functions
 
 These functions MUST NOT be available (security):
 
@@ -793,7 +951,7 @@ These functions MUST NOT be available (security):
 | `require` | Module loading |
 | `debug.*` | Debug library access |
 
-### 7.8.3 Safe os Functions
+### 7.9.3 Safe os Functions
 
 These `os` functions MAY be provided:
 
@@ -804,9 +962,9 @@ These `os` functions MAY be provided:
 | `os.difftime` | Time difference |
 | `os.clock` | CPU time |
 
-## 7.9 Sandboxing
+## 7.10 Sandboxing
 
-### 7.9.1 Execution Environment
+### 7.10.1 Execution Environment
 
 Lua code executes in a sandboxed environment:
 
@@ -819,7 +977,7 @@ Lua code executes in a sandboxed environment:
 | Execution time | Implementation MAY limit |
 | Memory | Implementation MAY limit |
 
-### 7.9.2 Global Variables
+### 7.10.2 Global Variables
 
 Scripts SHOULD NOT rely on global variable persistence between executions:
 
@@ -831,7 +989,7 @@ myGlobal = "value"
 whisker.state.set("myValue", "value")
 ```
 
-### 7.9.3 Error Isolation
+### 7.10.3 Error Isolation
 
 Lua errors SHOULD NOT crash the engine:
 
@@ -841,9 +999,9 @@ Lua errors SHOULD NOT crash the engine:
 | Runtime error | Catch, report, continue |
 | Infinite loop | Timeout (implementation-defined) |
 
-## 7.10 Error Handling
+## 7.11 Error Handling
 
-### 7.10.1 API Errors
+### 7.11.1 API Errors
 
 | Error | Cause | Example |
 |-------|-------|---------|
@@ -852,7 +1010,7 @@ Lua errors SHOULD NOT crash the engine:
 | Invalid passage | Passage doesn't exist | `whisker.passage.go("NoExist")` |
 | Index out of range | Invalid choice index | `whisker.choice.select(999)` |
 
-### 7.10.2 Error Messages
+### 7.11.2 Error Messages
 
 Implementations SHOULD provide helpful errors:
 
@@ -864,7 +1022,7 @@ Error in passage "Shop" at line 5:
   Expected: string
 ```
 
-### 7.10.3 Defensive Coding
+### 7.11.3 Defensive Coding
 
 Authors SHOULD validate before calling:
 
@@ -880,9 +1038,9 @@ end
 local gold = whisker.state.get("gold") or 0
 ```
 
-## 7.11 Implementation Notes
+## 7.12 Implementation Notes
 
-### 7.11.1 API Consistency
+### 7.12.1 API Consistency
 
 Implementations MUST:
 
@@ -891,7 +1049,7 @@ Implementations MUST:
 3. Return documented return types
 4. Handle edge cases gracefully
 
-### 7.11.2 Dot vs Colon Notation
+### 7.12.2 Dot vs Colon Notation
 
 WLS uses dot notation exclusively:
 
@@ -903,7 +1061,7 @@ whisker.state.get("gold")
 whisker.state:get("gold")
 ```
 
-### 7.11.3 Thread Safety
+### 7.12.3 Thread Safety
 
 If implementations support concurrent execution:
 
@@ -911,7 +1069,7 @@ If implementations support concurrent execution:
 - Navigation MUST be serialized
 - History operations MUST be thread-safe
 
-### 7.11.4 Performance
+### 7.12.4 Performance
 
 Implementations SHOULD:
 
@@ -920,9 +1078,9 @@ Implementations SHOULD:
 - Minimize memory allocation in hot paths
 - Consider lazy evaluation for computed properties
 
-## 7.12 Quick Reference
+## 7.13 Quick Reference
 
-### 7.12.1 State Management
+### 7.13.1 State Management
 
 ```lua
 whisker.state.get(key)           -- Get variable
@@ -933,7 +1091,7 @@ whisker.state.all()              -- Get all as table
 whisker.state.reset()            -- Clear all
 ```
 
-### 7.12.2 Passage Operations
+### 7.13.2 Passage Operations
 
 ```lua
 whisker.passage.current()        -- Current passage
@@ -944,7 +1102,7 @@ whisker.passage.all()            -- Get all passages
 whisker.passage.tags(tag)        -- Get by tag
 ```
 
-### 7.12.3 History
+### 7.13.3 History
 
 ```lua
 whisker.history.back()           -- Go back
@@ -955,7 +1113,7 @@ whisker.history.contains(id)     -- In history?
 whisker.history.clear()          -- Clear history
 ```
 
-### 7.12.4 Choices
+### 7.13.4 Choices
 
 ```lua
 whisker.choice.available()       -- Get choices
@@ -963,7 +1121,7 @@ whisker.choice.select(index)     -- Select choice
 whisker.choice.count()           -- Choice count
 ```
 
-### 7.12.5 Utilities
+### 7.13.5 Utilities
 
 ```lua
 whisker.visited(passage?)        -- Visit count

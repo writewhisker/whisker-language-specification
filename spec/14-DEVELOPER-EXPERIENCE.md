@@ -341,7 +341,65 @@ WLS uses a TextMate grammar for syntax highlighting:
 | `markup.choice.whisker` | + choices |
 | `entity.name.function.whisker` | Function names |
 
-### 14.5.3 Other IDEs
+### 14.5.3 Semantic Token Types
+
+WLS implementations SHOULD support LSP semantic tokens for rich syntax highlighting.
+
+**Token Types:**
+
+| Token Type | LSP Type | Description |
+|------------|----------|-------------|
+| `passage` | `class` | Passage names |
+| `variable` | `variable` | Story and temp variables |
+| `function` | `function` | User-defined functions |
+| `hook` | `property` | Hook names |
+| `keyword` | `keyword` | Language keywords |
+| `operator` | `operator` | Operators |
+| `string` | `string` | String literals |
+| `number` | `number` | Numeric literals |
+| `comment` | `comment` | Comments |
+| `directive` | `decorator` | @ directives |
+| `namespace` | `namespace` | Namespace names |
+| `parameter` | `parameter` | Function parameters |
+| `label` | `label` | Gather labels |
+
+**Token Modifiers:**
+
+| Modifier | Description | Applies To |
+|----------|-------------|------------|
+| `declaration` | Definition site | passage, variable, function, hook |
+| `reference` | Usage site | passage, variable, function, hook |
+| `modification` | Write access | variable |
+| `defaultLibrary` | Built-in API | function (whisker.*) |
+| `story` | Story-scoped | variable ($) |
+| `temporary` | Passage-scoped | variable (_) |
+
+**Example Tokenization:**
+
+```whisker
+:: Shop
+$gold = 100
++ {$gold >= 50} [Buy sword] { $gold -= 50 } -> Armory
+```
+
+| Text | Type | Modifiers |
+|------|------|-----------|
+| `Shop` | passage | declaration |
+| `gold` | variable | declaration, story |
+| `100` | number | - |
+| `gold` | variable | reference, story |
+| `50` | number | - |
+| `gold` | variable | modification, story |
+| `Armory` | passage | reference |
+
+**Implementation Notes:**
+
+1. Semantic tokens require AST, not just lexer
+2. Cache aggressively for performance
+3. Provide tokens even for invalid code
+4. Target < 50ms for full document tokenization
+
+### 14.5.4 Other IDEs
 
 The LSP enables integration with:
 - **Sublime Text**: Via LSP package
@@ -386,3 +444,93 @@ See Appendix A for complete error code reference.
 - Use watch expressions for complex conditions
 - Check call stack when in tunnels
 - Inspect variables before choices
+
+## 14.8 Incremental Parsing
+
+For responsive IDE experiences, implementations SHOULD support incremental parsing.
+
+### 14.8.1 Synchronization Points
+
+Safe reparse boundaries:
+
+| Boundary | Token | Description |
+|----------|-------|-------------|
+| Passage start | `::` | Full passage boundary |
+| Block end | `{/}` | Conditional block end |
+| Choice | `+`, `*` | Choice line start |
+| Namespace | `END NAMESPACE` | Namespace boundary |
+| Function | `END` | Function boundary |
+
+### 14.8.2 Error Recovery Strategies
+
+| Strategy | When | Recovery |
+|----------|------|----------|
+| Panic mode | Unclosed block | Skip to next `::` |
+| Insertion | Missing `{/}` | Insert virtual close |
+| Deletion | Extra `}` | Skip token |
+| Synchronization | Lost context | Find next passage |
+
+### 14.8.3 Performance Targets
+
+| Metric | Target | Description |
+|--------|--------|-------------|
+| Keystroke response | < 16ms | Re-tokenize visible lines |
+| Full diagnostics | < 100ms | Complete validation |
+| Symbol lookup | < 10ms | Go-to-definition |
+| Completion | < 50ms | Autocomplete list |
+
+### 14.8.4 Caching Strategies
+
+1. **Token cache**: Store tokens per line, invalidate on edit
+2. **AST cache**: Store passage ASTs, reparse affected passages only
+3. **Symbol cache**: Maintain symbol table, update incrementally
+4. **Diagnostic cache**: Store per-passage, revalidate changed passages
+
+### 14.8.5 Example Update Flow
+
+```
+User types character
+  → Invalidate affected line tokens
+  → Re-tokenize edited line (< 1ms)
+  → Schedule async reparse of affected passage (debounce 100ms)
+  → Update visible diagnostics immediately
+  → Full validation in background
+```
+
+## 14.9 Cross-Platform Lua
+
+### 14.9.1 Lua Version
+
+WLS targets Lua 5.4 semantics. Implementations on platforms without native Lua MUST provide equivalent behavior.
+
+### 14.9.2 Platform Variations
+
+| Platform | Lua Implementation | Notes |
+|----------|-------------------|-------|
+| Desktop | Native Lua 5.4 | Reference implementation |
+| Web | Fengari / WASM | Verify number handling |
+| Mobile | LuaJIT / Native | May have JIT differences |
+| Embedded | eLua / custom | Memory-constrained |
+
+### 14.9.3 Portability Requirements
+
+Implementations MUST:
+
+1. Support IEEE 754 doubles for numbers
+2. Handle UTF-8 strings correctly
+3. Provide consistent math.random behavior (seedable)
+4. Implement all required whisker.* APIs identically
+
+### 14.9.4 Testing Cross-Platform
+
+The WLS test corpus includes platform validation tests:
+
+```yaml
+# test-corpus/cross-platform/number-handling.yaml
+- input: "{{ 0.1 + 0.2 }}"
+  expected: "0.30000000000000004"  # IEEE 754 behavior
+
+# test-corpus/cross-platform/string-utf8.yaml
+- input: "{{ string.len('日本語') }}"
+  expected: "9"  # Byte length, not character count
+```

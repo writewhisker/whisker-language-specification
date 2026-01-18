@@ -1,0 +1,156 @@
+# WLS Semantic Token Tests
+# Category: semantic-tokens
+# Count: 10 tests
+# Added: REV-018 (Iteration 001)
+
+tests:
+  # ============================================
+  # PASSAGE TOKENS (2 tests)
+  # ============================================
+
+  - name: token-passage-declaration
+    description: Passage declaration tokenization
+    input: ":: MyPassage"
+    expected:
+      tokens:
+        - text: "MyPassage"
+          type: "passage"
+          modifiers: ["declaration"]
+          line: 0
+          column: 3
+
+  - name: token-passage-reference
+    description: Passage reference tokenization
+    input: |
+      :: Start
+      + [Go] -> Target
+    expected:
+      tokens:
+        - text: "Start"
+          type: "passage"
+          modifiers: ["declaration"]
+        - text: "Target"
+          type: "passage"
+          modifiers: ["reference"]
+
+  # ============================================
+  # VARIABLE TOKENS (3 tests)
+  # ============================================
+
+  - name: token-variable-declaration
+    description: Variable declaration tokenization
+    input: "$gold = 100"
+    expected:
+      tokens:
+        - text: "gold"
+          type: "variable"
+          modifiers: ["declaration", "story"]
+        - text: "100"
+          type: "number"
+
+  - name: token-variable-reference
+    description: Variable reference tokenization
+    input: |
+      $gold = 100
+      You have $gold gold.
+    expected:
+      tokens:
+        - text: "gold"
+          type: "variable"
+          modifiers: ["declaration", "story"]
+          line: 0
+        - text: "gold"
+          type: "variable"
+          modifiers: ["reference", "story"]
+          line: 1
+
+  - name: token-variable-modification
+    description: Variable modification tokenization
+    input: "$gold += 50"
+    expected:
+      tokens:
+        - text: "gold"
+          type: "variable"
+          modifiers: ["modification", "story"]
+
+  # ============================================
+  # FUNCTION TOKENS (2 tests)
+  # ============================================
+
+  - name: token-function-declaration
+    description: Function declaration tokenization
+    input: |
+      FUNCTION greet(name)
+        RETURN "Hello, " .. name
+      END
+    expected:
+      tokens:
+        - text: "greet"
+          type: "function"
+          modifiers: ["declaration"]
+        - text: "name"
+          type: "parameter"
+
+  - name: token-function-builtin
+    description: Built-in function tokenization
+    input: |
+      {{ whisker.state.get("gold") }}
+    expected:
+      tokens:
+        - text: "whisker.state.get"
+          type: "function"
+          modifiers: ["reference", "defaultLibrary"]
+
+  # ============================================
+  # OTHER TOKENS (3 tests)
+  # ============================================
+
+  - name: token-hook-definition
+    description: Hook definition tokenization
+    input: |
+      |myHook>[Content here]
+    expected:
+      tokens:
+        - text: "myHook"
+          type: "hook"
+          modifiers: ["declaration"]
+
+  - name: token-directive
+    description: Directive tokenization
+    input: |
+      @title: My Story
+      @vars
+    expected:
+      tokens:
+        - text: "@title"
+          type: "directive"
+        - text: "@vars"
+          type: "directive"
+
+  - name: token-combined-example
+    description: Combined tokenization example
+    input: |
+      :: Shop
+      $gold = 100
+      + {$gold >= 50} [Buy sword] { $gold -= 50 } -> Armory
+    expected:
+      tokens:
+        - text: "Shop"
+          type: "passage"
+          modifiers: ["declaration"]
+        - text: "gold"
+          type: "variable"
+          modifiers: ["declaration", "story"]
+        - text: "100"
+          type: "number"
+        - text: "gold"
+          type: "variable"
+          modifiers: ["reference", "story"]
+        - text: "50"
+          type: "number"
+        - text: "gold"
+          type: "variable"
+          modifiers: ["modification", "story"]
+        - text: "Armory"
+          type: "passage"
+          modifiers: ["reference"]

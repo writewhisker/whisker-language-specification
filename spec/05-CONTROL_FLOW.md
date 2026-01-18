@@ -465,7 +465,58 @@ Alternative state is tracked per passage and per alternative:
 
 **Implementation Note:** Implementations track alternatives by their position within each passage. Moving alternatives may reset their state.
 
-### 5.4.8 Alternatives in Choice Text
+### 5.4.8 Named Alternatives
+
+Alternatives may be named for stable state tracking across story edits.
+
+**Motivation:**
+
+By default, alternative state is tracked by position (index 0, 1, 2, etc.). This means reordering alternatives resets their state. Named alternatives solve this.
+
+**Syntax:**
+
+```whisker
+{| name=greeting "Hello!" | "Back again?" | "Welcome back!" }
+{&| name=weather "sunny" | "cloudy" | "rainy" }
+{~| name=reactions "smile" | "frown" | "laugh" }
+```
+
+**Behavior Comparison:**
+
+| Feature | Unnamed | Named |
+|---------|---------|-------|
+| State tracking | By position | By name |
+| Reordering | Resets state | Preserves state |
+| Save format | `"Passage:0"` | `"Passage:greeting"` |
+
+**Example:**
+
+```whisker
+:: OldMan
+The old man says, {| name=greeting "Hello!" | "You again?" | "Welcome back!" }
+```
+
+Reordering options preserves the visit count for "greeting".
+
+**Accessing State in Lua:**
+
+```lua
+-- Get visit count for named alternative
+local count = whisker.alternative.visits("OldMan", "greeting")
+
+-- Reset named alternative
+whisker.alternative.reset("OldMan", "greeting")
+```
+
+**Error Handling:**
+
+| Scenario | Behavior |
+|----------|----------|
+| Duplicate name in same passage | Warning WLS-FLW-015 |
+| Invalid name (not identifier) | Error WLS-SYN-018 |
+| Accessing undefined name in Lua | Returns 0 visits |
+
+### 5.4.9 Alternatives in Choice Text
 
 Alternatives can appear in choice text:
 
@@ -476,7 +527,7 @@ Alternatives can appear in choice text:
 + [{| Buy the rare item | (Already purchased) }] -> BuyRare
 ```
 
-### 5.4.9 Combining Alternatives
+### 5.4.10 Combining Alternatives
 
 Multiple alternatives can appear in the same line:
 

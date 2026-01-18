@@ -1,0 +1,184 @@
+# WLS Save State Tests
+# Category: save-state
+# Count: 12 tests
+# Added: REV-007 (Iteration 001)
+
+tests:
+  # ============================================
+  # BASIC SAVE/LOAD (4 tests)
+  # ============================================
+
+  - name: save-basic-structure
+    description: Basic save state structure
+    input: |
+      :: Start
+      $gold = 100
+      $playerName = "Hero"
+      + [Continue] -> End
+    expected:
+      save_state:
+        wls_version: "1.0.0"
+        current_passage: "Start"
+        variables:
+          gold: 100
+          playerName: "Hero"
+
+  - name: save-with-history
+    description: Save includes navigation history
+    input: |
+      :: Start
+      + [Go to Shop] -> Shop
+
+      :: Shop
+      + [Go to Tavern] -> Tavern
+
+      :: Tavern
+      + [End] -> End
+    expected:
+      after_navigation: ["Start", "Shop", "Tavern"]
+      save_state:
+        history: ["Start", "Shop", "Tavern"]
+
+  - name: save-excludes-temporaries
+    description: Temporary variables not saved
+    input: |
+      :: Start
+      $permanent = 100
+      _temporary = 50
+    expected:
+      save_state:
+        variables:
+          permanent: 100
+          # _temporary is NOT included
+
+  - name: load-restores-state
+    description: Load restores complete state
+    save_input:
+      wls_version: "1.0.0"
+      current_passage: "Shop"
+      variables:
+        gold: 150
+        hasKey: true
+      history: ["Start", "Village", "Shop"]
+    expected:
+      after_load:
+        current_passage: "Shop"
+        variables:
+          gold: 150
+          hasKey: true
+
+  # ============================================
+  # ALTERNATIVE STATE (3 tests)
+  # ============================================
+
+  - name: save-alternative-state-unnamed
+    description: Unnamed alternative state saved by index
+    input: |
+      :: Start
+      {| First | Second | Third }
+      + [Again] -> Start
+    expected:
+      after_visits: 2
+      save_state:
+        alternative_state:
+          "Start:0": 2
+
+  - name: save-alternative-state-named
+    description: Named alternative state saved by name
+    input: |
+      :: Start
+      {| name=greeting "Hello" | "Hi" | "Hey" }
+      + [Again] -> Start
+    expected:
+      after_visits: 3
+      save_state:
+        alternative_state:
+          "Start:greeting": 3
+
+  - name: load-alternative-state-restores
+    description: Loading restores alternative state
+    save_input:
+      wls_version: "1.0.0"
+      current_passage: "Start"
+      variables: {}
+      alternative_state:
+        "Start:0": 3
+    expected:
+      after_load:
+        output_next_visit: "Third"
+
+  # ============================================
+  # EXHAUSTED CHOICES (2 tests)
+  # ============================================
+
+  - name: save-exhausted-choices
+    description: Once-only choices saved as exhausted
+    input: |
+      :: Start
+      * [One-time choice] -> End
+      + [Repeatable] -> Start
+    expected:
+      after_selecting_once: 0
+      save_state:
+        exhausted_choices:
+          "Start": [0]
+
+  - name: load-exhausted-choices
+    description: Loading restores exhausted choices
+    save_input:
+      wls_version: "1.0.0"
+      current_passage: "Start"
+      variables: {}
+      exhausted_choices:
+        "Start": [0, 2]
+    expected:
+      after_load:
+        available_choice_count: 1  # Only non-exhausted choices available
+
+  # ============================================
+  # TUNNEL STATE (2 tests)
+  # ============================================
+
+  - name: save-tunnel-stack
+    description: Active tunnel calls saved
+    input: |
+      :: Start
+      -> Shop ->
+      After shopping.
+
+      :: Shop
+      Welcome to the shop.
+      + [Buy] {{ }} -> Shop
+    expected:
+      during_tunnel:
+        save_state:
+          tunnel_stack:
+            - passage: "Start"
+              return_line: 2
+
+  - name: load-tunnel-stack-restores
+    description: Loading in tunnel context restores correctly
+    save_input:
+      wls_version: "1.0.0"
+      current_passage: "Shop"
+      variables: {}
+      tunnel_stack:
+        - passage: "Start"
+          return_line: 2
+    expected:
+      after_return:
+        current_passage: "Start"
+
+  # ============================================
+  # VALIDATION (1 test)
+  # ============================================
+
+  - name: save-validation-invalid-passage
+    description: Invalid save rejected on load
+    save_input:
+      wls_version: "1.0.0"
+      current_passage: "NonExistentPassage"
+      variables: {}
+    expected:
+      error: WLS-SAVE-001
+      error_reason: "Passage 'NonExistentPassage' does not exist"

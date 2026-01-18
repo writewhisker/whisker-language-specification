@@ -1,0 +1,197 @@
+# WLS Hook Tests
+# Category: hooks
+# Count: 15 tests
+# Added: REV-010 (Iteration 001)
+
+tests:
+  # ============================================
+  # BASIC HOOK DEFINITION (4 tests)
+  # ============================================
+
+  - name: hook-definition-basic
+    description: Basic hook definition syntax
+    input: |
+      :: Room
+      |description>[The room is dark.]
+      + [Continue] -> End
+    expected:
+      valid: true
+      hooks:
+        description: "The room is dark."
+
+  - name: hook-definition-hidden
+    description: Hidden hook definition
+    input: |
+      :: Room
+      |secret hidden>[Hidden treasure location]
+      + [Search] -> Search
+    expected:
+      valid: true
+      hooks:
+        secret:
+          content: "Hidden treasure location"
+          visible: false
+
+  - name: hook-definition-multiple
+    description: Multiple hooks in one passage
+    input: |
+      :: Room
+      |status>[Health: 100]
+      The room is quiet.
+      |description>[A dusty chamber.]
+      + [Continue] -> End
+    expected:
+      valid: true
+      hooks:
+        status: "Health: 100"
+        description: "A dusty chamber."
+
+  - name: hook-definition-empty
+    description: Empty hook content
+    input: |
+      :: Room
+      |placeholder>[]
+    expected:
+      valid: true
+      hooks:
+        placeholder: ""
+
+  # ============================================
+  # HOOK OPERATIONS (6 tests)
+  # ============================================
+
+  - name: hook-replace-lua
+    description: Replace hook content via Lua
+    input: |
+      :: Room
+      |description>[The room is dark.]
+      + [Light torch] {{ whisker.hook.replace("description", "The room is lit.") }} -> Room
+    expected:
+      valid: true
+      after_choice:
+        hooks:
+          description: "The room is lit."
+
+  - name: hook-append-lua
+    description: Append to hook via Lua
+    input: |
+      :: Room
+      |description>[You are in a cave.]
+      + [Look around] {{ whisker.hook.append("description", " Water drips nearby.") }} -> Room
+    expected:
+      valid: true
+      after_choice:
+        hooks:
+          description: "You are in a cave. Water drips nearby."
+
+  - name: hook-prepend-lua
+    description: Prepend to hook via Lua
+    input: |
+      :: Room
+      |description>[The cave stretches ahead.]
+      + [Adjust eyes] {{ whisker.hook.prepend("description", "As your eyes adjust: ") }} -> Room
+    expected:
+      valid: true
+      after_choice:
+        hooks:
+          description: "As your eyes adjust: The cave stretches ahead."
+
+  - name: hook-show-hide
+    description: Show and hide hooks
+    input: |
+      :: Room
+      |hint hidden>[Check under the bed.]
+      + [Need hint] {{ whisker.hook.show("hint") }} -> Room
+      + [Hide hint] {{ whisker.hook.hide("hint") }} -> Room
+    expected:
+      valid: true
+
+  - name: hook-clear
+    description: Clear hook removes it
+    input: |
+      :: Room
+      |temporary>[Temporary message]
+      + [Dismiss] {{ whisker.hook.clear("temporary") }} -> Room
+    expected:
+      valid: true
+      after_choice:
+        hooks:
+          temporary: null
+
+  - name: hook-directive-syntax
+    description: Directive syntax for hook operations
+    input: |
+      :: Room
+      |description>[The room is dark.]
+      + [Light torch] { @replace: description { The room is lit. } } -> Room
+      + [Look closer] { @append: description { You see markings. } } -> Room
+    expected:
+      valid: true
+
+  # ============================================
+  # HOOK API (3 tests)
+  # ============================================
+
+  - name: hook-get-content
+    description: Get hook content via API
+    input: |
+      :: Room
+      |status>[Ready]
+      {{
+        local content = whisker.hook.get("status")
+        whisker.state.set("status_copy", content)
+      }}
+    expected:
+      valid: true
+      variables:
+        status_copy: "Ready"
+
+  - name: hook-exists-check
+    description: Check if hook exists
+    input: |
+      :: Room
+      |existing>[Content]
+      {{
+        local has_existing = whisker.hook.exists("existing")
+        local has_missing = whisker.hook.exists("missing")
+      }}
+    expected:
+      valid: true
+
+  - name: hook-all-enumerate
+    description: Enumerate all hooks
+    input: |
+      :: Room
+      |hook1>[First]
+      |hook2>[Second]
+      {{
+        local all = whisker.hook.all()
+        -- Returns table of hook states
+      }}
+    expected:
+      valid: true
+
+  # ============================================
+  # EDGE CASES (2 tests)
+  # ============================================
+
+  - name: hook-undefined-get
+    description: Get undefined hook returns empty string
+    input: |
+      :: Room
+      {{
+        local content = whisker.hook.get("nonexistent")
+        -- Returns "" (empty string)
+      }}
+    expected:
+      valid: true
+      warning: WLS-FLW-012
+
+  - name: hook-invalid-name
+    description: Invalid hook name produces error
+    input: |
+      :: Room
+      |123invalid>[Content]
+    expected:
+      valid: false
+      error: WLS-SYN-017

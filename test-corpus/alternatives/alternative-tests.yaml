@@ -269,3 +269,98 @@ tests:
     expected:
       valid: true
     note: Replaced - nested {alt} in choice text is implementation-dependent
+
+  # ============================================
+  # NAMED ALTERNATIVES (REV-012)
+  # ============================================
+
+  - name: alt-named-basic
+    description: Basic named alternative
+    input: |
+      :: Start
+      {| name=greeting "Hello!" | "Back again?" | "Welcome!" }
+      + [Again] -> Start
+    expected:
+      output_visit_1: "Hello!"
+      output_visit_2: "Back again?"
+      valid: true
+
+  - name: alt-named-cycle
+    description: Named cycle alternative
+    input: |
+      :: Start
+      {&| name=weather "sunny" | "cloudy" | "rainy" }
+      + [Again] -> Start
+    expected:
+      output_visit_1: "sunny"
+      output_visit_4: "sunny"
+      valid: true
+
+  - name: alt-named-shuffle
+    description: Named shuffle alternative
+    input: |
+      :: Start
+      {~| name=reactions "smile" | "frown" | "laugh" }
+    expected:
+      valid: true
+
+  - name: alt-named-once
+    description: Named once-only alternative
+    input: |
+      :: Start
+      {!| name=hints "Check drawer" | "Look under rug" }
+      + [Again] -> Start
+    expected:
+      output_visit_1: "Check drawer"
+      output_visit_2: "Look under rug"
+      output_visit_3: ""
+      valid: true
+
+  - name: alt-named-reorder-stable
+    description: Named alternatives stable across reordering
+    input: |
+      :: Start
+      {| name=greeting "Welcome!" | "Hello!" | "Back again?" }
+      + [Again] -> Start
+    expected:
+      # Save state uses "Start:greeting" not "Start:0"
+      save_key: "Start:greeting"
+      valid: true
+
+  - name: alt-named-multiple-per-passage
+    description: Multiple named alternatives in one passage
+    input: |
+      :: Market
+      The merchant {| name=mood "smiles" | "frowns" | "yawns" }.
+      The weather is {&| name=weather "pleasant" | "gloomy" | "stormy" }.
+    expected:
+      valid: true
+
+  - name: alt-named-duplicate-error
+    description: Duplicate names in same passage produces warning
+    input: |
+      :: Start
+      {| name=greeting "A" | "B" }
+      {| name=greeting "X" | "Y" }
+    expected:
+      valid: true
+      warning: WLS-FLW-015
+
+  - name: alt-named-invalid-name-error
+    description: Invalid alternative name produces error
+    input: |
+      :: Start
+      {| name=123invalid "A" | "B" }
+    expected:
+      valid: false
+      error: WLS-SYN-018
+
+  - name: alt-named-api-access
+    description: Named alternatives accessible via Lua API
+    input: |
+      :: Start
+      {| name=greeting "Hello" | "Hi" | "Hey" }
+      + [Again] -> Start
+      + [Check count] {{ whisker.alternative.visits("Start", "greeting") }} -> End
+    expected:
+      valid: true

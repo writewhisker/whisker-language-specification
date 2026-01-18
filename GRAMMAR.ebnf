@@ -1,5 +1,15 @@
 (* ========================================================================== *)
-(* Whisker Language Specification 1.0 - Formal Grammar                        *)
+(* Whisker Language Specification 1.0 - Formal Grammar (Revised)              *)
+(* ========================================================================== *)
+(* Revision: Phase 1 - Iteration 001                                          *)
+(* Date: 2026-01-17                                                           *)
+(* Changes: REV-001 through REV-004, REV-011                                  *)
+(*   - Added gather points (Section 16)                                       *)
+(*   - Added tunnels (Section 17)                                             *)
+(*   - Added module system (Section 18)                                       *)
+(*   - Added collection types (Section 19)                                    *)
+(*   - Added hooks (Section 20)                                               *)
+(*   - Integrated string concatenation into expressions                       *)
 (* ========================================================================== *)
 (* This grammar uses Extended Backus-Naur Form (EBNF) notation.               *)
 (*                                                                            *)
@@ -22,7 +32,15 @@
 (* 1. STORY STRUCTURE                                                         *)
 (* ========================================================================== *)
 
-story = [ story_header ] , [ vars_block ] , { passage } ;
+story = { include_directive } ,
+        [ story_header ] ,
+        [ vars_block ] ,
+        { story_element } ;
+
+story_element = passage
+              | namespace_block
+              | function_def
+              | list_declaration ;
 
 story_header = { header_directive } ;
 
@@ -35,7 +53,11 @@ header_value = { any_char - newline } ;
 
 vars_block = "@vars" , newline , { var_declaration } ;
 
-var_declaration = whitespace , identifier , ":" , literal , newline ;
+var_declaration = whitespace , identifier , ":" , var_value , newline ;
+
+var_value = literal
+          | array_literal
+          | map_literal ;
 
 
 (* ========================================================================== *)
@@ -57,11 +79,12 @@ directive_key = "tags" | "color" | "position" | "notes"
 
 directive_value = { any_char - newline } ;
 
-passage_body = { passage_element } , [ choice_block ] ;
+passage_body = { passage_element } , [ choice_gather_block ] ;
 
 passage_element = content_line
                 | variable_statement
                 | conditional_block
+                | tunnel_return
                 | comment
                 | blank_line ;
 
@@ -72,6 +95,8 @@ content_element = plain_text
                 | expression_interpolation
                 | inline_conditional
                 | text_alternative
+                | inline_tunnel_call
+                | hook_definition
                 | embedded_lua ;
 
 
@@ -115,23 +140,36 @@ or_expression = and_expression , { "or" , and_expression } ;
 
 and_expression = equality_expression , { "and" , equality_expression } ;
 
-equality_expression = comparison_expression ,
-                      { ( "==" | "~=" ) , comparison_expression } ;
+equality_expression = contains_expression ,
+                      { ( "==" | "~=" ) , contains_expression } ;
+
+contains_expression = comparison_expression ,
+                      [ "?" , comparison_expression ] ;
 
 comparison_expression = additive_expression ,
                         [ ( "<" | ">" | "<=" | ">=" ) , additive_expression ] ;
 
 additive_expression = multiplicative_expression ,
-                      { ( "+" | "-" ) , multiplicative_expression } ;
+                      { ( "+" | "-" | ".." ) , multiplicative_expression } ;
 
 multiplicative_expression = unary_expression ,
                             { ( "*" | "/" | "%" ) , unary_expression } ;
 
-unary_expression = [ "not" | "-" ] , primary_expression ;
+unary_expression = [ "not" | "-" | "#" ] , postfix_expression ;
+
+postfix_expression = primary_expression , { postfix_operator } ;
+
+postfix_operator = index_access | member_access ;
+
+index_access = "[" , expression , "]" ;
+
+member_access = "." , identifier ;
 
 primary_expression = literal
                    | variable_ref
                    | function_call
+                   | array_literal
+                   | map_literal
                    | "(" , expression , ")" ;
 
 function_call = qualified_name , "(" , [ argument_list ] , ")" ;
@@ -182,13 +220,15 @@ text_alternative = sequence_alternative
                  | shuffle_alternative
                  | once_alternative ;
 
-sequence_alternative = "{|" , alternative_options , "}" ;
+sequence_alternative = "{|" , [ alternative_name ] , alternative_options , "}" ;
 
-cycle_alternative = "{&|" , alternative_options , "}" ;
+cycle_alternative = "{&|" , [ alternative_name ] , alternative_options , "}" ;
 
-shuffle_alternative = "{~|" , alternative_options , "}" ;
+shuffle_alternative = "{~|" , [ alternative_name ] , alternative_options , "}" ;
 
-once_alternative = "{!|" , alternative_options , "}" ;
+once_alternative = "{!|" , [ alternative_name ] , alternative_options , "}" ;
+
+alternative_name = "name=" , identifier , whitespace ;
 
 alternative_options = alternative_option , { "|" , alternative_option } ;
 
@@ -203,7 +243,9 @@ alternative_content = plain_text
 (* 8. CHOICES                                                                 *)
 (* ========================================================================== *)
 
-choice_block = { choice } ;
+choice_gather_block = { choice_or_gather } ;
+
+choice_or_gather = choice | gather_block ;
 
 choice = choice_marker ,
          [ choice_condition ] ,
@@ -214,9 +256,9 @@ choice = choice_marker ,
 
 choice_marker = once_marker | sticky_marker ;
 
-once_marker = "+" ;
+once_marker = "+" , { "+" } ;
 
-sticky_marker = "*" ;
+sticky_marker = "*" , { "*" } ;
 
 choice_condition = "{" , whitespace , expression , whitespace , "}" ;
 
@@ -234,13 +276,19 @@ choice_action = "{" , action_statements , "}" ;
 
 action_statements = action_statement , { ";" , action_statement } ;
 
-action_statement = variable_assignment | lua_expression ;
+action_statement = variable_assignment
+                 | hook_operation
+                 | lua_expression ;
 
 lua_expression = lua_code ;
 
-choice_target = "->" , whitespace , target_name ;
+choice_target = simple_target | tunnel_call ;
 
-target_name = passage_name | special_target ;
+simple_target = "->" , whitespace , target_name ;
+
+target_name = qualified_passage_name | special_target ;
+
+qualified_passage_name = [ identifier , "::" ] , passage_name ;
 
 special_target = "END" | "BACK" | "RESTART" ;
 
@@ -272,7 +320,7 @@ string_literal = '"' , { string_char } , '"' ;
 
 string_char = ( any_char - ( '"' | "\" | newline ) ) | escape_sequence ;
 
-escape_sequence = "\\" | '\"' | "\n" | "\t" | "\r" | "\$" | "\{" | "\}" ;
+escape_sequence = "\\" | '\"' | "\n" | "\t" | "\r" | "\$" | "\{" | "\}" | "\|" | "\[" | "\]" ;
 
 boolean_literal = "true" | "false" ;
 
@@ -321,7 +369,10 @@ blank_line = { ws_char } , newline ;
 keyword = "and" | "or" | "not"
         | "true" | "false"
         | "else" | "elif"
-        | "END" | "BACK" | "RESTART" ;
+        | "END" | "BACK" | "RESTART"
+        | "INCLUDE" | "FUNCTION" | "NAMESPACE"
+        | "LIST" | "ARRAY" | "MAP"
+        | "IF" | "THEN" | "ELSEIF" | "ELSE" | "RETURN" ;
 
 
 (* ========================================================================== *)
@@ -329,48 +380,39 @@ keyword = "and" | "or" | "not"
 (* ========================================================================== *)
 
 (* Operators by precedence (highest to lowest):                               *)
-(*   1. not, - (unary)                                                        *)
+(*   1. not, - (unary), # (length)                                            *)
 (*   2. *, /, %                                                               *)
-(*   3. +, -                                                                  *)
+(*   3. +, -, ..                                                              *)
 (*   4. <, >, <=, >=                                                          *)
-(*   5. ==, ~=                                                                *)
-(*   6. and                                                                   *)
-(*   7. or                                                                    *)
+(*   5. ? (contains)                                                          *)
+(*   6. ==, ~=                                                                *)
+(*   7. and                                                                   *)
+(*   8. or                                                                    *)
 
 comparison_operator = "<" | ">" | "<=" | ">=" ;
 
 equality_operator = "==" | "~=" ;
 
-additive_operator = "+" | "-" ;
+additive_operator = "+" | "-" | ".." ;
 
 multiplicative_operator = "*" | "/" | "%" ;
 
 logical_operator = "and" | "or" ;
 
-unary_operator = "not" | "-" ;
+unary_operator = "not" | "-" | "#" ;
 
-string_operator = ".." ;
-
-
-(* ========================================================================== *)
-(* 15. STRING CONCATENATION                                                   *)
-(* ========================================================================== *)
-
-(* String concatenation extends additive expressions *)
-
-concatenation_expression = additive_expression ,
-                           { ".." , additive_expression } ;
+contains_operator = "?" ;
 
 
 (* ========================================================================== *)
-(* 16. SPECIAL CONSTRUCTS                                                     *)
+(* 15. SPECIAL CONSTRUCTS                                                     *)
 (* ========================================================================== *)
 
 (* Plain text is any character sequence not starting a special construct *)
 
 plain_text = { plain_char } ;
 
-plain_char = any_char - ( "$" | "{" | "}" | "[" | "]" | "\" | newline ) ;
+plain_char = any_char - ( "$" | "{" | "}" | "[" | "]" | "\" | "|" | "<" | newline ) ;
 
 (* Any character in the input *)
 
@@ -378,30 +420,239 @@ any_char = ? any Unicode character ? ;
 
 
 (* ========================================================================== *)
-(* 17. COMPLETE PRODUCTION SUMMARY                                            *)
+(* 16. GATHER POINTS                                                          *)
+(* ========================================================================== *)
+
+(* Gather points reconverge flow from multiple choice branches.               *)
+(* Gather depth must match the choice nesting level being gathered.           *)
+
+gather_block = gather_marker , [ gather_label ] , gather_content ;
+
+gather_marker = "-" , { "-" } ;
+(* Marker count = depth: "-" = depth 1, "- -" = depth 2, etc. *)
+
+gather_label = "(" , identifier , ")" ;
+
+gather_content = { passage_element } , [ choice_gather_block ] ;
+
+
+(* ========================================================================== *)
+(* 17. TUNNELS                                                                *)
+(* ========================================================================== *)
+
+(* Tunnels are passage subroutine calls with automatic return.                *)
+
+tunnel_call = "->" , whitespace , passage_name , whitespace , "->" ;
+
+tunnel_return = "<-" , newline ;
+
+inline_tunnel_call = tunnel_call ;
+
+
+(* ========================================================================== *)
+(* 18. MODULE SYSTEM                                                          *)
+(* ========================================================================== *)
+
+(* --- 18.1 Include Directive --- *)
+
+include_directive = "INCLUDE" , required_whitespace , string_literal , newline ;
+
+
+(* --- 18.2 Function Definition --- *)
+
+function_def = "FUNCTION" , required_whitespace , identifier ,
+               "(" , [ param_list ] , ")" , newline ,
+               function_body ,
+               "END" , newline ;
+
+param_list = identifier , { "," , whitespace , identifier } ;
+
+function_body = { function_statement } ;
+
+function_statement = function_assignment
+                   | function_conditional
+                   | function_return
+                   | function_call_statement
+                   | lua_block_in_function
+                   | function_comment
+                   | function_blank ;
+
+function_assignment = whitespace , identifier , whitespace , "=" ,
+                      whitespace , function_expression , newline ;
+
+function_conditional = whitespace , "IF" , required_whitespace , function_expression ,
+                       required_whitespace , "THEN" , newline ,
+                       function_body ,
+                       { function_elseif } ,
+                       [ function_else ] ,
+                       whitespace , "END" , newline ;
+
+function_elseif = whitespace , "ELSEIF" , required_whitespace , function_expression ,
+                  required_whitespace , "THEN" , newline ,
+                  function_body ;
+
+function_else = whitespace , "ELSE" , newline , function_body ;
+
+function_return = whitespace , "RETURN" ,
+                  [ required_whitespace , function_expression ] , newline ;
+
+function_call_statement = whitespace , function_call , newline ;
+
+lua_block_in_function = whitespace , "{{" , lua_code , "}}" , newline ;
+
+function_comment = whitespace , "--" , { any_char - newline } , newline ;
+
+function_blank = whitespace , newline ;
+
+(* Function expressions *)
+function_expression = function_or_expr ;
+
+function_or_expr = function_and_expr , { whitespace , "or" , whitespace , function_and_expr } ;
+
+function_and_expr = function_comparison ,
+                    { whitespace , "and" , whitespace , function_comparison } ;
+
+function_comparison = function_additive ,
+                      [ whitespace , ( "==" | "~=" | "<" | ">" | "<=" | ">=" ) ,
+                        whitespace , function_additive ] ;
+
+function_additive = function_multiplicative ,
+                    { whitespace , ( "+" | "-" | ".." ) , whitespace , function_multiplicative } ;
+
+function_multiplicative = function_unary ,
+                          { whitespace , ( "*" | "/" | "%" ) , whitespace , function_unary } ;
+
+function_unary = [ ( "not" | "-" | "#" ) , whitespace ] , function_postfix ;
+
+function_postfix = function_primary , { function_postfix_op } ;
+
+function_postfix_op = "[" , function_expression , "]"
+                    | "." , identifier ;
+
+function_primary = literal
+                 | identifier
+                 | function_call
+                 | "(" , function_expression , ")" ;
+
+
+(* --- 18.3 Namespace Definition --- *)
+
+namespace_block = "NAMESPACE" , required_whitespace , identifier , newline ,
+                  { namespace_element } ,
+                  "END" , required_whitespace , "NAMESPACE" , newline ;
+
+namespace_element = passage
+                  | function_def
+                  | namespace_block ;
+
+
+(* ========================================================================== *)
+(* 19. COLLECTION TYPES                                                       *)
+(* ========================================================================== *)
+
+(* --- 19.1 LIST Type --- *)
+
+list_declaration = "LIST" , required_whitespace , identifier , whitespace , "=" ,
+                   whitespace , list_values , newline ;
+
+list_values = list_value , { whitespace , "," , whitespace , list_value } ;
+
+list_value = [ "(" ] , identifier , [ ")" ] ;
+(* Parentheses mark initially active values *)
+
+
+(* --- 19.2 ARRAY Type --- *)
+
+array_literal = "[" , whitespace , [ array_elements ] , whitespace , "]" ;
+
+array_elements = expression , { whitespace , "," , whitespace , expression } ;
+
+
+(* --- 19.3 MAP Type --- *)
+
+map_literal = "{" , whitespace , [ map_entries ] , whitespace , "}" ;
+
+map_entries = map_entry , { whitespace , "," , whitespace , map_entry } ;
+
+map_entry = map_key , whitespace , ":" , whitespace , expression ;
+
+map_key = identifier | string_literal ;
+
+
+(* ========================================================================== *)
+(* 20. HOOKS                                                                  *)
+(* ========================================================================== *)
+
+(* --- 20.1 Hook Definition --- *)
+
+hook_definition = "|" , hook_name , ">" , "[" , hook_content , "]" ;
+
+hook_name = identifier ;
+
+hook_content = { hook_content_element } ;
+
+hook_content_element = hook_plain_char
+                     | variable_interpolation
+                     | expression_interpolation
+                     | escaped_bracket ;
+
+hook_plain_char = any_char - ( "[" | "]" | "$" | "\" ) ;
+
+
+(* --- 20.2 Hook Operations --- *)
+
+hook_operation = "@" , operation_type , ":" , whitespace , hook_name ,
+                 [ whitespace , "{" , operation_content , "}" ] ;
+
+operation_type = "replace" | "append" | "prepend" | "show" | "hide" ;
+
+operation_content = { content_element } ;
+
+
+(* ========================================================================== *)
+(* 21. COMPLETE PRODUCTION SUMMARY                                            *)
 (* ========================================================================== *)
 
 (*
   Top-level:
-    story -> story_header? vars_block? passage*
+    story -> include* header? vars? (passage | namespace | function | list)*
 
   Passage:
-    passage -> passage_header passage_directives? passage_body
-    passage_body -> passage_element* choice_block?
+    passage -> header directives? body
+    body -> element* (choice | gather)*
 
   Content:
-    content_element -> plain_text | interpolation | conditional | alternative
+    content_element -> text | interpolation | conditional | alternative
+                     | tunnel_call | hook
 
   Expressions:
-    expression -> or_expression (precedence climbing)
+    expression -> or -> and -> equality -> contains -> comparison
+               -> additive -> multiplicative -> unary -> postfix -> primary
 
   Choices:
     choice -> marker condition? text action? target
+    gather -> marker label? content
 
   Control Flow:
     conditional_block -> { expr } content {elif}* {else}? {/}
     inline_conditional -> {expr: true | false}
     text_alternative -> {[prefix]| opt1 | opt2 | ... }
+    tunnel_call -> -> passage ->
+    tunnel_return -> <-
+
+  Modules:
+    include -> INCLUDE "path"
+    function -> FUNCTION name(params) body END
+    namespace -> NAMESPACE name elements END NAMESPACE
+
+  Collections:
+    list -> LIST name = values
+    array -> [ elements ]
+    map -> { key: value, ... }
+
+  Hooks:
+    definition -> |name>[content]
+    operation -> @op: name { content }
 *)
 
 

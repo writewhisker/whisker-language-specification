@@ -232,7 +232,40 @@ Two reference implementations exist for WLS:
 
 Both implementations MUST produce identical behavior for all WLS stories.
 
-## 1.10 Acknowledgments
+## 1.10 Version Policy
+
+The Whisker Language Specification follows semantic versioning (semver).
+
+### 1.10.1 Version Number Format
+
+`MAJOR.MINOR.PATCH` (e.g., 1.0.0, 1.1.0, 2.0.0)
+
+### 1.10.2 Version Categories
+
+| Type | When Incremented | Compatibility |
+|------|------------------|---------------|
+| **MAJOR** (1.x → 2.x) | Breaking changes to syntax or semantics | Stories MAY require migration |
+| **MINOR** (1.0 → 1.1) | New features, additive changes | Fully backwards compatible |
+| **PATCH** (1.0.0 → 1.0.1) | Clarifications, typo fixes, test additions | No behavioral changes |
+
+### 1.10.3 Compatibility Guarantees
+
+1. **Forward Compatibility**: Stories written for WLS 1.x will work with all WLS 1.x implementations
+2. **Implementation Versioning**: Implementations SHOULD report the WLS version they target
+3. **Feature Detection**: Stories MAY use `whisker.version()` to check runtime WLS version
+
+### 1.10.4 Deprecation Policy
+
+Features marked `@deprecated` in one MINOR version MAY be removed in the next MAJOR version. Deprecation warnings MUST be issued for at least one MINOR release before removal.
+
+### 1.10.5 Version API
+
+```lua
+whisker.version()
+-- Returns: { major = 1, minor = 0, patch = 0, string = "1.0.0" }
+```
+
+## 1.11 Acknowledgments
 
 WLS draws inspiration from:
 
